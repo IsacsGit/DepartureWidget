@@ -1,124 +1,167 @@
 <!DOCTYPE html>
 <html lang="sv">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="js-widget-title" content="Blackeberg">
+
+<meta
+    name="js-widget-title"
+    content="Blackeberg"
+>
 
 <style>
+
+/* =========================================================
+   BAS
+   ========================================================= */
+
 * {
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
+
     margin: 0;
+
     width: 100%;
     height: 100%;
+
     overflow: hidden;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
-                 "Helvetica Neue", sans-serif;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "Helvetica Neue",
+        sans-serif;
+
     background: #111214;
+
     color: white;
+
     padding: 15px;
 }
 
-/* =========================
+
+/* =========================================================
    RUBRIK
-   ========================= */
+   ========================================================= */
 
 .title {
+
     font-size: 16px;
+
     font-weight: 700;
+
     margin-bottom: 8px;
 }
 
 
-/* =========================
+/* =========================================================
    AVGÅNGSLISTA
-   ========================= */
+   ========================================================= */
 
 .departures {
+
     width: 100%;
 }
 
 
-/* =========================
-   EN AVGÅNG
-   ========================= */
+/* =========================================================
+   AVGÅNGSRAD
+   ========================================================= */
 
 .departure {
+
     display: flex;
+
     align-items: center;
 
     height: 36px;
 
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-bottom:
+        1px solid
+        rgba(255,255,255,0.08);
 }
 
 .departure:last-child {
+
     border-bottom: none;
 }
 
 
-/* =========================
+/* =========================================================
    LINJENUMMER
-   ========================= */
+   ========================================================= */
 
 .line {
+
     width: 31px;
+
     height: 24px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     background: #45a65a;
+
     border-radius: 7px;
 
     font-size: 13px;
+
     font-weight: 700;
 
     flex-shrink: 0;
 }
 
 
-/* =========================
+/* =========================================================
    DESTINATION
-   ========================= */
 
-/*
- * FAST BREDD!
- *
- * Alla destinationer får exakt
- * samma utrymme. Därför börjar
- * alla tider på samma position.
- */
+   FAST BREDD!
+
+   Alla tider börjar därför på exakt
+   samma position.
+   ========================================================= */
 
 .destination {
+
     margin-left: 8px;
 
     width: 105px;
+
     flex: 0 0 105px;
 
     font-size: 12px;
+
     color: #eeeeee;
 
     white-space: nowrap;
+
     overflow: hidden;
+
     text-overflow: ellipsis;
 }
 
 
-/* =========================
-   AVGÅNGSTID
-   ========================= */
+/* =========================================================
+   TID
+   ========================================================= */
 
 .time {
+
     margin-left: 8px;
 
     font-size: 13px;
+
     font-weight: 700;
 
     white-space: nowrap;
@@ -127,48 +170,65 @@ body {
 }
 
 
-/* "Nu" */
+/* =========================================================
+   "NU"
+   ========================================================= */
+
 .now {
+
     color: #55d66f;
 }
 
 
-/* =========================
-   FELMEDDELANDE
-   ========================= */
+/* =========================================================
+   FELTEXT
+   ========================================================= */
 
 .error {
+
     color: #9b9ba1;
+
     font-size: 12px;
+
     margin-top: 5px;
 }
 
 </style>
+
 </head>
 
 
 <body>
 
-<!-- RUBRIK -->
+
+<!-- =======================================================
+     RUBRIK
+     ======================================================= -->
 
 <div class="title">
     Blackeberg
 </div>
 
 
-<!-- AVGÅNGAR -->
+<!-- =======================================================
+     AVGÅNGAR
+     ======================================================= -->
 
-<div id="departures" class="departures">
+<div
+    id="departures"
+    class="departures"
+>
     Hämtar…
 </div>
 
 
 <script>
 
-/* =========================================================
-   SL / TRAFIKLAB API
 
-   Blackeberg T-bana = site 9105
+/* =========================================================
+   SL TRANSPORT API
+
+   Blackeberg = site 9105
    ========================================================= */
 
 const API =
@@ -176,58 +236,178 @@ const API =
 
 
 /* =========================================================
-   WIDGET WEB
+   WIDGETWEB
 
-   Låt Widget Web vänta på att avgångarna
-   har hämtats innan den renderar widgeten.
+   WidgetWeb väntar på denna funktion innan
+   den tar sin bild av sidan.
+
+   Vi ger API-anropet lite tid att bli klart.
    ========================================================= */
 
-function __wweb2WaitMillisecondsToWidgetIsReady() {
-    return 1500;
+function __wweb2WaitMillisecondsToWidgetIsReady(
+    currentDelayMs
+) {
+
+    return 2000;
 }
 
 
 /* =========================================================
-   FORMATERA TID
+   FORMATERA AVGÅNGSTID
 
    Exempel:
 
-   0 min  → Nu
-   1 min  → 1 min
-   3 min  → 3 min
-   17 min → 17 min
+   0 min  -> Nu
+   1 min  -> 1 min
+   3 min  -> 3 min
+   12 min -> 12 min
    ========================================================= */
 
-function formatTime(isoTime) {
+function formatTime(
+    departureTime
+) {
 
-    if (!isoTime) {
+    if (!departureTime) {
+
         return "?";
     }
 
+
     const departure =
-        new Date(isoTime);
+        new Date(
+            departureTime
+        );
+
 
     const now =
         new Date();
 
-    const seconds =
-        Math.round(
-            (
-                departure.getTime() -
-                now.getTime()
-            ) / 1000
+
+    const differenceMs =
+        departure.getTime() -
+        now.getTime();
+
+
+    const differenceMinutes =
+        Math.ceil(
+            differenceMs / 60000
         );
 
-    const minutes =
-        Math.round(seconds / 60);
 
+    if (
+        differenceMinutes <= 0
+    ) {
 
-    if (minutes <= 0) {
         return "Nu";
     }
 
 
-    return minutes + " min";
+    return (
+        differenceMinutes +
+        " min"
+    );
+}
+
+
+/* =========================================================
+   KONTROLLERA DESTINATION
+
+   Vi accepterar ENDAST:
+
+   - Hässelby strand
+   - Vällingby
+
+   Vällingby är INTE obligatoriskt.
+
+   Om fyra Hässelby strand kommer först
+   visas fyra Hässelby strand.
+   ========================================================= */
+
+function isCorrectDestination(
+    destination
+) {
+
+    if (
+        typeof destination !==
+        "string"
+    ) {
+
+        return false;
+    }
+
+
+    const text =
+        destination
+            .toLowerCase()
+            .trim();
+
+
+    return (
+        text === "hässelby strand" ||
+        text === "hasselby strand" ||
+        text === "vällingby" ||
+        text === "vallingby"
+    );
+}
+
+
+/* =========================================================
+   KONTROLLERA TUNNELBANA
+
+   Vi kontrollerar transport_mode.
+
+   Detta är viktigt eftersom vi inte bara
+   ska anta att linje 17/18/19 = tunnelbana.
+   ========================================================= */
+
+function isMetro(
+    departure
+) {
+
+    const mode =
+        String(
+            departure
+                ?.line
+                ?.transport_mode ??
+            ""
+        )
+        .toUpperCase()
+        .trim();
+
+
+    return mode === "METRO";
+}
+
+
+/* =========================================================
+   KONTROLLERA LINJE
+
+   Endast:
+
+   17
+   18
+   19
+   ========================================================= */
+
+function isCorrectLine(
+    departure
+) {
+
+    const line =
+        String(
+            departure
+                ?.line
+                ?.designation ??
+            ""
+        )
+        .trim();
+
+
+    return (
+        line === "17" ||
+        line === "18" ||
+        line === "19"
+    );
 }
 
 
@@ -237,27 +417,54 @@ function formatTime(isoTime) {
 
 async function loadDepartures() {
 
+
     const container =
-        document.getElementById("departures");
+        document.getElementById(
+            "departures"
+        );
 
 
     try {
 
-        /* Hämta SL-data */
+
+        /* =================================================
+           CACHE-BUSTING
+
+           Timestamp gör URL:en unik vid varje
+           hämtning.
+
+           Exempel:
+
+           .../departures?cache=175...
+           ================================================= */
+
+        const url =
+            API +
+            "?cache=" +
+            Date.now();
+
+
+        /* =================================================
+           HÄMTA FÄRSK DATA
+           ================================================= */
 
         const response =
-            await fetch(API, {
-                cache: "no-store"
-            });
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "API error " +
-                response.status
+            await fetch(
+                url,
+                {
+                    cache: "no-store"
+                }
             );
 
+
+        if (
+            !response.ok
+        ) {
+
+            throw new Error(
+                "SL API " +
+                response.status
+            );
         }
 
 
@@ -266,125 +473,189 @@ async function loadDepartures() {
 
 
         /* =================================================
-           HÄMTA AVGÅNGSLISTAN
+           SL API RETURNERAR:
+
+           {
+               departures: [...]
+           }
+
+           Vi använder exakt den listan.
            ================================================= */
+
+        if (
+            !Array.isArray(
+                data.departures
+            )
+        ) {
+
+            throw new Error(
+                "SL API saknar departures"
+            );
+        }
+
 
         let departures =
-            Array.isArray(data.departures)
-                ? data.departures
-                : [];
+            data.departures;
 
 
         /* =================================================
-           ENDAST LINJE 17, 18 OCH 19
+           STEG 1
+
+           ENDAST TUNNELBANA
            ================================================= */
 
         departures =
-            departures.filter(function(d) {
+            departures.filter(
+                function(departure) {
 
-                const line =
-                    String(
-                        d.line?.designation ??
-                        d.line?.name ??
-                        d.designation ??
-                        ""
+                    return isMetro(
+                        departure
                     );
 
-
-                return [
-                    "17",
-                    "18",
-                    "19"
-                ].includes(line);
-
-            });
+                }
+            );
 
 
         /* =================================================
-           ENDAST:
+           STEG 2
 
-           Hässelby strand
-           Vällingby
+           ENDAST 17, 18, 19
            ================================================= */
 
         departures =
-            departures.filter(function(d) {
+            departures.filter(
+                function(departure) {
 
-                const destination =
-                    String(
-                        d.destination ??
-                        d.direction ??
-                        ""
-                    ).toLowerCase();
+                    return isCorrectLine(
+                        departure
+                    );
 
-
-                return (
-                    destination.includes(
-                        "hässelby strand"
-                    ) ||
-
-                    destination.includes(
-                        "vällingby"
-                    )
-                );
-
-            });
+                }
+            );
 
 
         /* =================================================
+           STEG 3
+
+           ENDAST HÄSSELBY STRAND /
+           VÄLLINGBY
+
+           Vällingby är INTE obligatoriskt.
+           ================================================= */
+
+        departures =
+            departures.filter(
+                function(departure) {
+
+                    return isCorrectDestination(
+                        departure.destination
+                    );
+
+                }
+            );
+
+
+        /* =================================================
+           STEG 4
+
            VÄLJ TID
 
            expected = realtid
-           planned  = tidtabell
+           scheduled = tidtabell
 
-           Vi prioriterar realtid.
+           Vi använder expected om den finns.
            ================================================= */
 
         departures =
             departures
-            .map(function(d) {
-
-                return {
-
-                    original: d,
-
-                    time:
-                        d.expected ??
-                        d.planned ??
-                        d.departure_time ??
-                        d.time
-
-                };
-
-            })
+                .map(
+                    function(departure) {
 
 
-            .filter(function(d) {
+                        const time =
+                            departure.expected ??
+                            departure.scheduled;
 
-                return (
-                    d.time &&
-                    !isNaN(
-                        new Date(
-                            d.time
-                        ).getTime()
-                    )
+
+                        return {
+
+                            departure:
+                                departure,
+
+                            time:
+                                time
+
+                        };
+
+                    }
                 );
-
-            });
 
 
         /* =================================================
-           SORTERA
+           TA BORT AVGÅNGAR UTAN GILTIG TID
+           ================================================= */
 
-           Närmaste avgång först
+        departures =
+            departures.filter(
+                function(item) {
+
+
+                    if (
+                        !item.time
+                    ) {
+
+                        return false;
+                    }
+
+
+                    const timestamp =
+                        new Date(
+                            item.time
+                        ).getTime();
+
+
+                    return (
+                        !isNaN(
+                            timestamp
+                        )
+                    );
+
+                }
+            );
+
+
+        /* =================================================
+           STEG 5
+
+           SORTERA ALLA MATCHANDE AVGÅNGAR
+
+           Det här är det viktiga.
+
+           Vi blandar:
+
+           17 Hässelby
+           18 Hässelby
+           19 Vällingby
+           17 Vällingby
+
+           och sorterar ALLA efter faktisk avgångstid.
+
+           Ingen destination prioriteras.
            ================================================= */
 
         departures.sort(
             function(a, b) {
 
                 return (
-                    new Date(a.time) -
-                    new Date(b.time)
+                    new Date(
+                        a.time
+                    ).getTime()
+
+                    -
+
+                    new Date(
+                        b.time
+                    ).getTime()
                 );
 
             }
@@ -392,15 +663,28 @@ async function loadDepartures() {
 
 
         /* =================================================
-           ENDAST DE 4 NÄRMASTE
+           STEG 6
+
+           NU tar vi exakt fyra.
+
+           INTE före sorteringen.
+
+           INTE en av varje linje.
+
+           INTE en Vällingby.
+
+           Bara de fyra närmaste.
            ================================================= */
 
         departures =
-            departures.slice(0, 4);
+            departures.slice(
+                0,
+                4
+            );
 
 
         /* =================================================
-           OM INGA AVGÅNGAR HITTAS
+           OM VI INTE HAR NÅGRA AVGÅNGAR
            ================================================= */
 
         if (
@@ -413,35 +697,36 @@ async function loadDepartures() {
                 '</div>';
 
             return;
-
         }
 
 
         /* =================================================
-           RENSA GAMLA AVGÅNGAR
+           RENSA
            ================================================= */
 
-        container.innerHTML = "";
+        container.innerHTML =
+            "";
 
 
         /* =================================================
-           SKAPA VARJE AVGÅNG
+           VISA DE FYRA AVGÅNGARNA
            ================================================= */
 
         departures.forEach(
             function(item) {
 
-                const d =
-                    item.original;
+
+                const departure =
+                    item.departure;
 
 
-                /* Linjenummer */
+                /* Linje */
 
                 const line =
                     String(
-                        d.line?.designation ??
-                        d.line?.name ??
-                        d.designation ??
+                        departure
+                            ?.line
+                            ?.designation ??
                         "?"
                     );
 
@@ -450,15 +735,15 @@ async function loadDepartures() {
 
                 const destination =
                     String(
-                        d.destination ??
-                        d.direction ??
+                        departure
+                            ?.destination ??
                         ""
                     );
 
 
                 /* Tid */
 
-                const formatted =
+                const formattedTime =
                     formatTime(
                         item.time
                     );
@@ -476,7 +761,9 @@ async function loadDepartures() {
                     "departure";
 
 
-                /* HTML */
+                /* =================================================
+                   HTML FÖR RADEN
+                   ================================================= */
 
                 row.innerHTML = `
 
@@ -488,12 +775,14 @@ async function loadDepartures() {
                         ${destination}
                     </div>
 
-                    <div class="time ${
-                        formatted === "Nu"
-                            ? "now"
-                            : ""
-                    }">
-                        ${formatted}
+                    <div
+                        class="time ${
+                            formattedTime === "Nu"
+                                ? "now"
+                                : ""
+                        }"
+                    >
+                        ${formattedTime}
                     </div>
 
                 `;
@@ -506,22 +795,41 @@ async function loadDepartures() {
             }
         );
 
+
     }
 
 
-    /* =====================================================
-       FELHANTERING
-       ===================================================== */
+    catch (
+        error
+    ) {
 
-    catch (error) {
 
-        console.error(error);
+        console.error(
+            error
+        );
 
 
         container.innerHTML =
             '<div class="error">' +
             'Kunde inte hämta avgångar' +
             '</div>';
+
+
+        /*
+         * WidgetWeb Developer Mode
+         */
+
+        if (
+            typeof __wweb2Log ===
+            "function"
+        ) {
+
+            __wweb2Log(
+                "SL error: " +
+                error.message
+            );
+
+        }
 
     }
 
@@ -536,5 +844,7 @@ loadDepartures();
 
 </script>
 
+
 </body>
+
 </html>
