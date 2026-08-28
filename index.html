@@ -24,23 +24,36 @@ body {
     padding: 15px;
 }
 
-/* Rubrik */
+/* =========================
+   RUBRIK
+   ========================= */
+
 .title {
     font-size: 16px;
     font-weight: 700;
     margin-bottom: 8px;
 }
 
-/* Avgångslista */
+
+/* =========================
+   AVGÅNGSLISTA
+   ========================= */
+
 .departures {
     width: 100%;
 }
 
-/* En avgång */
+
+/* =========================
+   EN AVGÅNG
+   ========================= */
+
 .departure {
     display: flex;
     align-items: center;
+
     height: 36px;
+
     border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
@@ -48,7 +61,11 @@ body {
     border-bottom: none;
 }
 
-/* Linjenummer */
+
+/* =========================
+   LINJENUMMER
+   ========================= */
+
 .line {
     width: 31px;
     height: 24px;
@@ -66,9 +83,24 @@ body {
     flex-shrink: 0;
 }
 
-/* Destination */
+
+/* =========================
+   DESTINATION
+   ========================= */
+
+/*
+ * FAST BREDD!
+ *
+ * Alla destinationer får exakt
+ * samma utrymme. Därför börjar
+ * alla tider på samma position.
+ */
+
 .destination {
     margin-left: 8px;
+
+    width: 105px;
+    flex: 0 0 105px;
 
     font-size: 12px;
     color: #eeeeee;
@@ -76,38 +108,55 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-
-    flex: 1;
 }
 
-/* Tid */
-.time {
-    margin-left: 6px;
 
-    font-size: 14px;
+/* =========================
+   AVGÅNGSTID
+   ========================= */
+
+.time {
+    margin-left: 8px;
+
+    font-size: 13px;
     font-weight: 700;
 
-    min-width: 43px;
-    text-align: right;
+    white-space: nowrap;
+
+    flex: 0 0 auto;
 }
 
+
+/* "Nu" */
 .now {
     color: #55d66f;
 }
+
+
+/* =========================
+   FELMEDDELANDE
+   ========================= */
 
 .error {
     color: #9b9ba1;
     font-size: 12px;
     margin-top: 5px;
 }
+
 </style>
 </head>
 
+
 <body>
+
+<!-- RUBRIK -->
 
 <div class="title">
     Blackeberg
 </div>
+
+
+<!-- AVGÅNGAR -->
 
 <div id="departures" class="departures">
     Hämtar…
@@ -116,72 +165,109 @@ body {
 
 <script>
 
+/* =========================================================
+   SL / TRAFIKLAB API
+
+   Blackeberg T-bana = site 9105
+   ========================================================= */
+
 const API =
     "https://transport.integration.sl.se/v1/sites/9105/departures";
 
 
-/*
- * WidgetWeb väntar på denna funktion
- * innan den tar bilden av widgeten.
- */
+/* =========================================================
+   WIDGET WEB
+
+   Låt Widget Web vänta på att avgångarna
+   har hämtats innan den renderar widgeten.
+   ========================================================= */
+
 function __wweb2WaitMillisecondsToWidgetIsReady() {
     return 1500;
 }
 
 
-/*
- * Gör om avgångstiden till:
- *
- * Nu
- * 2 min
- * 8 min
- * 17 min
- */
+/* =========================================================
+   FORMATERA TID
+
+   Exempel:
+
+   0 min  → Nu
+   1 min  → 1 min
+   3 min  → 3 min
+   17 min → 17 min
+   ========================================================= */
+
 function formatTime(isoTime) {
 
     if (!isoTime) {
         return "?";
     }
 
-    const departure = new Date(isoTime);
-    const now = new Date();
+    const departure =
+        new Date(isoTime);
+
+    const now =
+        new Date();
 
     const seconds =
         Math.round(
-            (departure.getTime() - now.getTime()) / 1000
+            (
+                departure.getTime() -
+                now.getTime()
+            ) / 1000
         );
 
     const minutes =
         Math.round(seconds / 60);
 
+
     if (minutes <= 0) {
         return "Nu";
     }
 
+
     return minutes + " min";
 }
 
+
+/* =========================================================
+   HÄMTA AVGÅNGAR
+   ========================================================= */
 
 async function loadDepartures() {
 
     const container =
         document.getElementById("departures");
 
+
     try {
+
+        /* Hämta SL-data */
 
         const response =
             await fetch(API, {
                 cache: "no-store"
             });
 
+
         if (!response.ok) {
+
             throw new Error(
-                "API error " + response.status
+                "API error " +
+                response.status
             );
+
         }
+
 
         const data =
             await response.json();
+
+
+        /* =================================================
+           HÄMTA AVGÅNGSLISTAN
+           ================================================= */
 
         let departures =
             Array.isArray(data.departures)
@@ -189,9 +275,10 @@ async function loadDepartures() {
                 : [];
 
 
-        /*
-         * ENDAST tunnelbana 17, 18, 19
-         */
+        /* =================================================
+           ENDAST LINJE 17, 18 OCH 19
+           ================================================= */
+
         departures =
             departures.filter(function(d) {
 
@@ -203,16 +290,23 @@ async function loadDepartures() {
                         ""
                     );
 
-                return (
-                    ["17", "18", "19"]
-                    .includes(line)
-                );
+
+                return [
+                    "17",
+                    "18",
+                    "19"
+                ].includes(line);
+
             });
 
 
-        /*
-         * ENDAST mot Hässelby strand / Vällingby
-         */
+        /* =================================================
+           ENDAST:
+
+           Hässelby strand
+           Vällingby
+           ================================================= */
+
         departures =
             departures.filter(function(d) {
 
@@ -223,24 +317,35 @@ async function loadDepartures() {
                         ""
                     ).toLowerCase();
 
+
                 return (
-                    destination.includes("hässelby strand") ||
-                    destination.includes("vällingby")
+                    destination.includes(
+                        "hässelby strand"
+                    ) ||
+
+                    destination.includes(
+                        "vällingby"
+                    )
                 );
+
             });
 
 
-        /*
-         * Använd realtid (expected)
-         * när den finns.
-         *
-         * Annars planned.
-         */
+        /* =================================================
+           VÄLJ TID
+
+           expected = realtid
+           planned  = tidtabell
+
+           Vi prioriterar realtid.
+           ================================================= */
+
         departures =
             departures
             .map(function(d) {
 
                 return {
+
                     original: d,
 
                     time:
@@ -248,42 +353,59 @@ async function loadDepartures() {
                         d.planned ??
                         d.departure_time ??
                         d.time
+
                 };
 
             })
+
+
             .filter(function(d) {
 
                 return (
                     d.time &&
                     !isNaN(
-                        new Date(d.time).getTime()
+                        new Date(
+                            d.time
+                        ).getTime()
                     )
                 );
 
             });
 
 
-        /*
-         * Närmaste först
-         */
-        departures.sort(function(a, b) {
+        /* =================================================
+           SORTERA
 
-            return (
-                new Date(a.time) -
-                new Date(b.time)
-            );
+           Närmaste avgång först
+           ================================================= */
 
-        });
+        departures.sort(
+            function(a, b) {
+
+                return (
+                    new Date(a.time) -
+                    new Date(b.time)
+                );
+
+            }
+        );
 
 
-        /*
-         * Visa endast 4
-         */
+        /* =================================================
+           ENDAST DE 4 NÄRMASTE
+           ================================================= */
+
         departures =
             departures.slice(0, 4);
 
 
-        if (departures.length === 0) {
+        /* =================================================
+           OM INGA AVGÅNGAR HITTAS
+           ================================================= */
+
+        if (
+            departures.length === 0
+        ) {
 
             container.innerHTML =
                 '<div class="error">' +
@@ -291,86 +413,125 @@ async function loadDepartures() {
                 '</div>';
 
             return;
+
         }
 
+
+        /* =================================================
+           RENSA GAMLA AVGÅNGAR
+           ================================================= */
 
         container.innerHTML = "";
 
 
-        departures.forEach(function(item) {
+        /* =================================================
+           SKAPA VARJE AVGÅNG
+           ================================================= */
 
-            const d =
-                item.original;
+        departures.forEach(
+            function(item) {
+
+                const d =
+                    item.original;
 
 
-            const line =
-                String(
-                    d.line?.designation ??
-                    d.line?.name ??
-                    d.designation ??
-                    "?"
+                /* Linjenummer */
+
+                const line =
+                    String(
+                        d.line?.designation ??
+                        d.line?.name ??
+                        d.designation ??
+                        "?"
+                    );
+
+
+                /* Destination */
+
+                const destination =
+                    String(
+                        d.destination ??
+                        d.direction ??
+                        ""
+                    );
+
+
+                /* Tid */
+
+                const formatted =
+                    formatTime(
+                        item.time
+                    );
+
+
+                /* Skapa rad */
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className =
+                    "departure";
+
+
+                /* HTML */
+
+                row.innerHTML = `
+
+                    <div class="line">
+                        ${line}
+                    </div>
+
+                    <div class="destination">
+                        ${destination}
+                    </div>
+
+                    <div class="time ${
+                        formatted === "Nu"
+                            ? "now"
+                            : ""
+                    }">
+                        ${formatted}
+                    </div>
+
+                `;
+
+
+                container.appendChild(
+                    row
                 );
 
-
-            const destination =
-                String(
-                    d.destination ??
-                    d.direction ??
-                    ""
-                );
-
-
-            const formatted =
-                formatTime(item.time);
-
-
-            const row =
-                document.createElement("div");
-
-            row.className =
-                "departure";
-
-
-            row.innerHTML = `
-                <div class="line">
-                    ${line}
-                </div>
-
-                <div class="destination">
-                    ${destination}
-                </div>
-
-                <div class="time ${
-                    formatted === "Nu"
-                        ? "now"
-                        : ""
-                }">
-                    ${formatted}
-                </div>
-            `;
-
-
-            container.appendChild(row);
-
-        });
+            }
+        );
 
     }
+
+
+    /* =====================================================
+       FELHANTERING
+       ===================================================== */
 
     catch (error) {
 
         console.error(error);
 
+
         container.innerHTML =
             '<div class="error">' +
             'Kunde inte hämta avgångar' +
             '</div>';
+
     }
+
 }
 
 
-/*
- * Starta widgeten
- */
+/* =========================================================
+   STARTA
+   ========================================================= */
+
 loadDepartures();
 
 </script>
