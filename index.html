@@ -1,8 +1,9 @@
+```html
 <!DOCTYPE html>
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
-<meta name="js-widget-title" content="Blackeberg T-bana">
+<meta name="js-widget-title" content="Blackeberg">
 
 <style>
 * {
@@ -20,41 +21,27 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display",
                  "Helvetica Neue", sans-serif;
     background: #111214;
-    color: #ffffff;
-    padding: 16px;
+    color: white;
+    padding: 15px;
 }
 
-.header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 2px;
-}
-
-.metro-icon {
-    font-size: 18px;
-}
-
+/* Rubrik */
 .title {
     font-size: 16px;
     font-weight: 700;
+    margin-bottom: 8px;
 }
 
-.subtitle {
-    font-size: 11px;
-    color: #9b9ba1;
-    margin-left: 27px;
-    margin-bottom: 12px;
-}
-
+/* Avgångslista */
 .departures {
     width: 100%;
 }
 
+/* En avgång */
 .departure {
     display: flex;
     align-items: center;
-    height: 35px;
+    height: 36px;
     border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
@@ -62,32 +49,46 @@ body {
     border-bottom: none;
 }
 
+/* Linjenummer */
 .line {
-    width: 32px;
-    height: 25px;
+    width: 31px;
+    height: 24px;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #46a65c;
+
+    background: #45a65a;
     border-radius: 7px;
+
     font-size: 13px;
     font-weight: 700;
+
+    flex-shrink: 0;
 }
 
+/* Destination */
 .destination {
-    flex: 1;
-    margin-left: 10px;
+    margin-left: 8px;
+
     font-size: 12px;
     color: #eeeeee;
+
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    flex: 1;
 }
 
+/* Tid */
 .time {
+    margin-left: 6px;
+
     font-size: 14px;
     font-weight: 700;
-    min-width: 45px;
+
+    min-width: 43px;
     text-align: right;
 }
 
@@ -98,36 +99,21 @@ body {
 .error {
     color: #9b9ba1;
     font-size: 12px;
-    margin-top: 8px;
-}
-
-.footer {
     margin-top: 5px;
-    font-size: 8px;
-    color: #66676c;
 }
-
 </style>
 </head>
 
 <body>
 
-<div class="header">
-    <div class="metro-icon">🚇</div>
-    <div class="title">Blackeberg</div>
-</div>
-
-<div class="subtitle">
-    Mot Hässelby strand / Vällingby
+<div class="title">
+    Blackeberg
 </div>
 
 <div id="departures" class="departures">
-    Hämtar avgångar…
+    Hämtar…
 </div>
 
-<div class="footer">
-    Data från Trafiklab.se
-</div>
 
 <script>
 
@@ -136,16 +122,21 @@ const API =
 
 
 /*
- * WidgetWeb behöver få lite extra tid eftersom
- * avgångarna hämtas asynkront.
+ * WidgetWeb väntar på denna funktion
+ * innan den tar bilden av widgeten.
  */
-function __wweb2WaitMillisecondsToWidgetIsReady(currentDelayMs) {
+function __wweb2WaitMillisecondsToWidgetIsReady() {
     return 1500;
 }
 
 
 /*
- * Gör "3 min", "Nu", osv.
+ * Gör om avgångstiden till:
+ *
+ * Nu
+ * 2 min
+ * 8 min
+ * 17 min
  */
 function formatTime(isoTime) {
 
@@ -156,11 +147,13 @@ function formatTime(isoTime) {
     const departure = new Date(isoTime);
     const now = new Date();
 
-    const seconds = Math.round(
-        (departure.getTime() - now.getTime()) / 1000
-    );
+    const seconds =
+        Math.round(
+            (departure.getTime() - now.getTime()) / 1000
+        );
 
-    const minutes = Math.round(seconds / 60);
+    const minutes =
+        Math.round(seconds / 60);
 
     if (minutes <= 0) {
         return "Nu";
@@ -170,9 +163,6 @@ function formatTime(isoTime) {
 }
 
 
-/*
- * Försök hitta rätt tunnelbaneavgångar.
- */
 async function loadDepartures() {
 
     const container =
@@ -180,132 +170,120 @@ async function loadDepartures() {
 
     try {
 
-        const response = await fetch(API, {
-            cache: "no-store"
-        });
+        const response =
+            await fetch(API, {
+                cache: "no-store"
+            });
 
         if (!response.ok) {
             throw new Error(
-                "SL API returned " + response.status
+                "API error " + response.status
             );
         }
 
-        const data = await response.json();
+        const data =
+            await response.json();
 
-        /*
-         * SL:s API grupperar avgångar efter transporttyp.
-         * Tunnelbana ligger normalt i "departures".
-         */
-
-        let departures = [];
-
-        if (Array.isArray(data.departures)) {
-            departures = data.departures;
-        }
-
-        /*
-         * Om API:t returnerar ett annat format,
-         * försök även läsa metro-arrayen.
-         */
-
-        if (
-            departures.length === 0 &&
-            Array.isArray(data.metro)
-        ) {
-            departures = data.metro;
-        }
+        let departures =
+            Array.isArray(data.departures)
+                ? data.departures
+                : [];
 
 
         /*
-         * Endast:
-         * 17
-         * 18
-         * 19
+         * ENDAST tunnelbana 17, 18, 19
          */
-        departures = departures.filter(function(d) {
+        departures =
+            departures.filter(function(d) {
 
-            const line =
-                String(
-                    d.line?.designation ??
-                    d.line?.name ??
-                    d.designation ??
-                    ""
+                const line =
+                    String(
+                        d.line?.designation ??
+                        d.line?.name ??
+                        d.designation ??
+                        ""
+                    );
+
+                return (
+                    ["17", "18", "19"]
+                    .includes(line)
                 );
-
-            return ["17", "18", "19"].includes(line);
-        });
+            });
 
 
         /*
-         * Endast Hässelby strand / Vällingby.
+         * ENDAST mot Hässelby strand / Vällingby
          */
-        departures = departures.filter(function(d) {
+        departures =
+            departures.filter(function(d) {
 
-            const destination =
-                String(
-                    d.destination ??
-                    d.direction ??
-                    d.stopPoint?.name ??
-                    ""
-                ).toLowerCase();
+                const destination =
+                    String(
+                        d.destination ??
+                        d.direction ??
+                        ""
+                    ).toLowerCase();
 
-            return (
-                destination.includes("hässelby strand") ||
-                destination.includes("vällingby")
-            );
-        });
+                return (
+                    destination.includes("hässelby strand") ||
+                    destination.includes("vällingby")
+                );
+            });
 
 
         /*
-         * Använd expected (realtid) först.
-         * Om expected saknas används planned.
+         * Använd realtid (expected)
+         * när den finns.
+         *
+         * Annars planned.
          */
-        departures = departures
+        departures =
+            departures
             .map(function(d) {
-
-                const time =
-                    d.expected ??
-                    d.planned ??
-                    d.departure_time ??
-                    d.time;
 
                 return {
                     original: d,
-                    time: time
+
+                    time:
+                        d.expected ??
+                        d.planned ??
+                        d.departure_time ??
+                        d.time
                 };
 
             })
             .filter(function(d) {
 
-                return d.time &&
-                       !isNaN(
-                           new Date(d.time).getTime()
-                       );
+                return (
+                    d.time &&
+                    !isNaN(
+                        new Date(d.time).getTime()
+                    )
+                );
 
             });
 
 
         /*
-         * Sortera närmaste först.
+         * Närmaste först
          */
         departures.sort(function(a, b) {
 
-            return new Date(a.time) -
-                   new Date(b.time);
+            return (
+                new Date(a.time) -
+                new Date(b.time)
+            );
 
         });
 
 
         /*
-         * Visa endast 4.
+         * Visa endast 4
          */
         departures =
             departures.slice(0, 4);
 
 
-        /*
-         * Visa resultatet.
-         */
         if (departures.length === 0) {
 
             container.innerHTML =
@@ -322,7 +300,9 @@ async function loadDepartures() {
 
         departures.forEach(function(item) {
 
-            const d = item.original;
+            const d =
+                item.original;
+
 
             const line =
                 String(
@@ -332,12 +312,14 @@ async function loadDepartures() {
                     "?"
                 );
 
+
             const destination =
                 String(
                     d.destination ??
                     d.direction ??
                     ""
                 );
+
 
             const formatted =
                 formatTime(item.time);
@@ -346,21 +328,24 @@ async function loadDepartures() {
             const row =
                 document.createElement("div");
 
-            row.className = "departure";
-
-
-            const isNow =
-                formatted === "Nu";
+            row.className =
+                "departure";
 
 
             row.innerHTML = `
-                <div class="line">${line}</div>
+                <div class="line">
+                    ${line}
+                </div>
 
                 <div class="destination">
                     ${destination}
                 </div>
 
-                <div class="time ${isNow ? "now" : ""}">
+                <div class="time ${
+                    formatted === "Nu"
+                        ? "now"
+                        : ""
+                }">
                     ${formatted}
                 </div>
             `;
@@ -376,25 +361,16 @@ async function loadDepartures() {
 
         console.error(error);
 
-        /*
-         * WidgetWeb kan visa detta i Developer Mode.
-         */
-        if (typeof __wweb2Log === "function") {
-            __wweb2Log(
-                "SL API error: " + error.message
-            );
-        }
-
         container.innerHTML =
             '<div class="error">' +
-            'Kunde inte hämta SL:s avgångar' +
+            'Kunde inte hämta avgångar' +
             '</div>';
     }
 }
 
 
 /*
- * Starta.
+ * Starta widgeten
  */
 loadDepartures();
 
@@ -402,3 +378,4 @@ loadDepartures();
 
 </body>
 </html>
+```
