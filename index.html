@@ -7,7 +7,7 @@
 
 <meta
     name="js-widget-title"
-    content="Blackeberg"
+    content="Västergöksvägen till Blackeberg"
 >
 
 <style>
@@ -206,7 +206,7 @@ body {
      ======================================================= -->
 
 <div class="title">
-    Blackeberg
+    Västergöksv. → Blackeberg
 </div>
 
 
@@ -218,7 +218,7 @@ body {
     id="departures"
     class="departures"
 >
-    Hämtar…
+    Hämtar resväg…
 </div>
 
 
@@ -226,13 +226,21 @@ body {
 
 
 /* =========================================================
-   SL TRANSPORT API
+   RESROBOT V2.1 API KONFIGURATION
 
-   Blackeberg = site 9105
+   API-Nyckel: Din Trafiklab-nyckel
+   Västergöksvägen ID = 740049443
+   Blackeberg ID      = 740020110
    ========================================================= */
 
-const API =
-    "https://transport.integration.sl.se/v1/sites/9105/departures";
+const API_KEY =
+    "00080700-932a-4541-bed9-6a2e2aa81bd1";
+
+const ORIGIN_ID =
+    "740049443";
+
+const DEST_ID =
+    "740020110";
 
 
 /* =========================================================
@@ -255,6 +263,8 @@ function __wweb2WaitMillisecondsToWidgetIsReady(
 /* =========================================================
    FORMATERA AVGÅNGSTID
 
+   Omvandlar datum och tid från API:et till minuter.
+
    Exempel:
 
    0 min  -> Nu
@@ -264,10 +274,14 @@ function __wweb2WaitMillisecondsToWidgetIsReady(
    ========================================================= */
 
 function formatTime(
-    departureTime
+    dateStr,
+    timeStr
 ) {
 
-    if (!departureTime) {
+    if (
+        !dateStr ||
+        !timeStr
+    ) {
 
         return "?";
     }
@@ -275,7 +289,9 @@ function formatTime(
 
     const departure =
         new Date(
-            departureTime
+            dateStr +
+            "T" +
+            timeStr
         );
 
 
@@ -310,112 +326,10 @@ function formatTime(
 
 
 /* =========================================================
-   KONTROLLERA DESTINATION
-
-   Vi accepterar ENDAST:
-
-   - Hässelby strand
-   - Vällingby
-
-   Vällingby är INTE obligatoriskt.
-
-   Om fyra Hässelby strand kommer först
-   visas fyra Hässelby strand.
+   HÄMTA RESVÄG
    ========================================================= */
 
-function isCorrectDestination(
-    destination
-) {
-
-    if (
-        typeof destination !==
-        "string"
-    ) {
-
-        return false;
-    }
-
-
-    const text =
-        destination
-            .toLowerCase()
-            .trim();
-
-
-    return (
-        text === "hässelby strand" ||
-        text === "hasselby strand" ||
-        text === "vällingby" ||
-        text === "vallingby"
-    );
-}
-
-
-/* =========================================================
-   KONTROLLERA TUNNELBANA
-
-   Vi kontrollerar transport_mode.
-
-   Detta är viktigt eftersom vi inte bara
-   ska anta att linje 17/18/19 = tunnelbana.
-   ========================================================= */
-
-function isMetro(
-    departure
-) {
-
-    const mode =
-        String(
-            departure
-                ?.line
-                ?.transport_mode ??
-            ""
-        )
-        .toUpperCase()
-        .trim();
-
-
-    return mode === "METRO";
-}
-
-
-/* =========================================================
-   KONTROLLERA LINJE
-
-   Endast:
-
-   17
-   18
-   19
-   ========================================================= */
-
-function isCorrectLine(
-    departure
-) {
-
-    const line =
-        String(
-            departure
-                ?.line
-                ?.designation ??
-            ""
-        )
-        .trim();
-
-
-    return (
-        line === "17" ||
-        line === "18" ||
-        line === "19"
-    );
-}
-
-
-/* =========================================================
-   HÄMTA AVGÅNGAR
-   ========================================================= */
-
-async function loadDepartures() {
+async function loadTrip() {
 
 
     const container =
@@ -428,20 +342,26 @@ async function loadDepartures() {
 
 
         /* =================================================
-           CACHE-BUSTING
-
-           Timestamp gör URL:en unik vid varje
-           hämtning.
-
-           Exempel:
-
-           .../departures?cache=175...
+           CORS PROXY + RESROBOT TRIP API
+           
+           Eftersom anropet görs i en widget/lokalt 
+           skickar vi anropet genom corsproxy.io för 
+           att undvika att webbläsaren blockerar det.
            ================================================= */
 
+        const targetUrl =
+            "https://api.resrobot.se/v2.1/trip" +
+            "?accessId=" + API_KEY +
+            "&originId=" + ORIGIN_ID +
+            "&destId=" + DEST_ID +
+            "&format=json" +
+            "&numF=4";
+
         const url =
-            API +
-            "?cache=" +
-            Date.now();
+            "https://corsproxy.io/?" +
+            encodeURIComponent(
+                targetUrl
+            );
 
 
         /* =================================================
@@ -462,7 +382,7 @@ async function loadDepartures() {
         ) {
 
             throw new Error(
-                "SL API " +
+                "API svarade med status: " +
                 response.status
             );
         }
@@ -473,235 +393,28 @@ async function loadDepartures() {
 
 
         /* =================================================
-           SL API RETURNERAR:
-
-           {
-               departures: [...]
-           }
-
-           Vi använder exakt den listan.
+           VALIDERA DATAN FRÅN RESROBOT
            ================================================= */
 
         if (
+            !data ||
             !Array.isArray(
-                data.departures
+                data.Trip
             )
         ) {
 
             throw new Error(
-                "SL API saknar departures"
+                "Inga resor hittades i API-svaret"
             );
         }
 
 
-        let departures =
-            data.departures;
+        let trips =
+            data.Trip;
 
 
         /* =================================================
-           STEG 1
-
-           ENDAST TUNNELBANA
-           ================================================= */
-
-        departures =
-            departures.filter(
-                function(departure) {
-
-                    return isMetro(
-                        departure
-                    );
-
-                }
-            );
-
-
-        /* =================================================
-           STEG 2
-
-           ENDAST 17, 18, 19
-           ================================================= */
-
-        departures =
-            departures.filter(
-                function(departure) {
-
-                    return isCorrectLine(
-                        departure
-                    );
-
-                }
-            );
-
-
-        /* =================================================
-           STEG 3
-
-           ENDAST HÄSSELBY STRAND /
-           VÄLLINGBY
-
-           Vällingby är INTE obligatoriskt.
-           ================================================= */
-
-        departures =
-            departures.filter(
-                function(departure) {
-
-                    return isCorrectDestination(
-                        departure.destination
-                    );
-
-                }
-            );
-
-
-        /* =================================================
-           STEG 4
-
-           VÄLJ TID
-
-           expected = realtid
-           scheduled = tidtabell
-
-           Vi använder expected om den finns.
-           ================================================= */
-
-        departures =
-            departures
-                .map(
-                    function(departure) {
-
-
-                        const time =
-                            departure.expected ??
-                            departure.scheduled;
-
-
-                        return {
-
-                            departure:
-                                departure,
-
-                            time:
-                                time
-
-                        };
-
-                    }
-                );
-
-
-        /* =================================================
-           TA BORT AVGÅNGAR UTAN GILTIG TID
-           ================================================= */
-
-        departures =
-            departures.filter(
-                function(item) {
-
-
-                    if (
-                        !item.time
-                    ) {
-
-                        return false;
-                    }
-
-
-                    const timestamp =
-                        new Date(
-                            item.time
-                        ).getTime();
-
-
-                    return (
-                        !isNaN(
-                            timestamp
-                        )
-                    );
-
-                }
-            );
-
-
-        /* =================================================
-           STEG 5
-
-           SORTERA ALLA MATCHANDE AVGÅNGAR
-
-           Det här är det viktiga.
-
-           Vi blandar:
-
-           17 Hässelby
-           18 Hässelby
-           19 Vällingby
-           17 Vällingby
-
-           och sorterar ALLA efter faktisk avgångstid.
-
-           Ingen destination prioriteras.
-           ================================================= */
-
-        departures.sort(
-            function(a, b) {
-
-                return (
-                    new Date(
-                        a.time
-                    ).getTime()
-
-                    -
-
-                    new Date(
-                        b.time
-                    ).getTime()
-                );
-
-            }
-        );
-
-
-        /* =================================================
-           STEG 6
-
-           NU tar vi exakt fyra.
-
-           INTE före sorteringen.
-
-           INTE en av varje linje.
-
-           INTE en Vällingby.
-
-           Bara de fyra närmaste.
-           ================================================= */
-
-        departures =
-            departures.slice(
-                0,
-                4
-            );
-
-
-        /* =================================================
-           OM VI INTE HAR NÅGRA AVGÅNGAR
-           ================================================= */
-
-        if (
-            departures.length === 0
-        ) {
-
-            container.innerHTML =
-                '<div class="error">' +
-                'Inga avgångar hittades' +
-                '</div>';
-
-            return;
-        }
-
-
-        /* =================================================
-           RENSA
+           RENSA LADDNINGSTEXT
            ================================================= */
 
         container.innerHTML =
@@ -709,91 +422,121 @@ async function loadDepartures() {
 
 
         /* =================================================
-           VISA DE FYRA AVGÅNGARNA
+           BEARBETA OCH VISA RESTERANDE RESOR (MAX 4)
            ================================================= */
 
-        departures.forEach(
-            function(item) {
+        trips
+            .slice(0, 4)
+            .forEach(
+                function(trip) {
 
 
-                const departure =
-                    item.departure;
+                    /* =====================================
+                       HÄMTA FÖRSTA BENET (LEG) PÅ RESAN
+                       ===================================== */
+
+                    const legs =
+                        Array.isArray(
+                            trip.LegList?.Leg
+                        )
+                            ? trip.LegList.Leg
+                            : [trip.LegList?.Leg];
 
 
-                /* Linje */
+                    const firstLeg =
+                        legs[0];
 
-                const line =
-                    String(
-                        departure
-                            ?.line
-                            ?.designation ??
-                        "?"
+
+                    if (
+                        !firstLeg
+                    ) {
+
+                        return;
+                    }
+
+
+                    /* Linjenummer */
+
+                    const line =
+                        String(
+                            firstLeg.Product?.displayNumber ??
+                            firstLeg.name ??
+                            "?"
+                        )
+                        .trim();
+
+
+                    /* Destination / Hållplats */
+
+                    const destination =
+                        "Blackeberg";
+
+
+                    /* Realtid vs Ordinarie tid */
+
+                    const depDate =
+                        firstLeg.Origin?.rtDate ??
+                        firstLeg.Origin?.date;
+
+                    const depTime =
+                        firstLeg.Origin?.rtTime ??
+                        firstLeg.Origin?.time;
+
+
+                    /* Tid-formatering */
+
+                    const formattedTime =
+                        formatTime(
+                            depDate,
+                            depTime
+                        );
+
+
+                    /* Skapa rad element */
+
+                    const row =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    row.className =
+                        "departure";
+
+
+                    /* =====================================
+                       HTML FÖR RADEN
+                       ===================================== */
+
+                    row.innerHTML = `
+
+                        <div class="line">
+                            ${line}
+                        </div>
+
+                        <div class="destination">
+                            ${destination}
+                        </div>
+
+                        <div
+                            class="time ${
+                                formattedTime === "Nu"
+                                    ? "now"
+                                    : ""
+                            }"
+                        >
+                            ${formattedTime}
+                        </div>
+
+                    `;
+
+
+                    container.appendChild(
+                        row
                     );
 
-
-                /* Destination */
-
-                const destination =
-                    String(
-                        departure
-                            ?.destination ??
-                        ""
-                    );
-
-
-                /* Tid */
-
-                const formattedTime =
-                    formatTime(
-                        item.time
-                    );
-
-
-                /* Skapa rad */
-
-                const row =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                row.className =
-                    "departure";
-
-
-                /* =================================================
-                   HTML FÖR RADEN
-                   ================================================= */
-
-                row.innerHTML = `
-
-                    <div class="line">
-                        ${line}
-                    </div>
-
-                    <div class="destination">
-                        ${destination}
-                    </div>
-
-                    <div
-                        class="time ${
-                            formattedTime === "Nu"
-                                ? "now"
-                                : ""
-                        }"
-                    >
-                        ${formattedTime}
-                    </div>
-
-                `;
-
-
-                container.appendChild(
-                    row
-                );
-
-            }
-        );
+                }
+            );
 
 
     }
@@ -811,7 +554,7 @@ async function loadDepartures() {
 
         container.innerHTML =
             '<div class="error">' +
-            'Kunde inte hämta avgångar' +
+            'Kunde inte hämta resväg' +
             '</div>';
 
 
@@ -825,7 +568,7 @@ async function loadDepartures() {
         ) {
 
             __wweb2Log(
-                "SL error: " +
+                "ResRobot error: " +
                 error.message
             );
 
@@ -840,7 +583,7 @@ async function loadDepartures() {
    STARTA
    ========================================================= */
 
-loadDepartures();
+loadTrip();
 
 </script>
 
