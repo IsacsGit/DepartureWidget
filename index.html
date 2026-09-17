@@ -1,1917 +1,1211 @@
 <!DOCTYPE html>
 <html lang="sv">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-    name="js-widget-title"
-    content="Blackeberg"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-
-/* =========================================================
-   BAS
-   ========================================================= */
-
-* {
-    box-sizing: border-box;
-}
-
-html,
-body {
-
-    margin: 0;
-
-    width: 100%;
-    height: 100%;
-
-    overflow: hidden;
-}
-
-body {
-
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "SF Pro Display",
-        "Helvetica Neue",
-        sans-serif;
-
-    background: #111214;
-
-    color: white;
-
-    padding: 15px;
-}
-
-
-/* =========================================================
-   RUBRIK
-   ========================================================= */
-
-.title {
-
-    font-size: 16px;
-
-    font-weight: 700;
-
-    margin-bottom: 8px;
-}
-
-
-/* =========================================================
-   RESVÄG
-   ========================================================= */
-
-.trip {
-
-    width: 100%;
-}
-
-
-/* =========================================================
-   RESERAD
-   ========================================================= */
-
-.trip-row {
-
-    display: flex;
-
-    align-items: center;
-
-    height: 36px;
-
-    border-bottom:
-        1px solid
-        rgba(255,255,255,0.08);
-}
-
-.trip-row:last-child {
-
-    border-bottom: none;
-}
-
-
-/* =========================================================
-   LINJENUMMER
-   ========================================================= */
-
-.line {
-
-    width: 31px;
-
-    height: 24px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    background: #45a65a;
-
-    border-radius: 7px;
-
-    font-size: 13px;
-
-    font-weight: 700;
-
-    flex-shrink: 0;
-}
-
-
-/* =========================================================
-   DESTINATION / RIKTNING
-   ========================================================= */
-
-.destination {
-
-    margin-left: 8px;
-
-    width: 105px;
-
-    flex: 0 0 105px;
-
-    font-size: 12px;
-
-    color: #eeeeee;
-
-    white-space: nowrap;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-}
-
-
-/* =========================================================
-   TID
-   ========================================================= */
-
-.time {
-
-    margin-left: 8px;
-
-    font-size: 13px;
-
-    font-weight: 700;
-
-    white-space: nowrap;
-
-    flex: 0 0 auto;
-}
-
-
-/* =========================================================
-   NU
-   ========================================================= */
-
-.now {
-
-    color: #55d66f;
-}
-
-
-/* =========================================================
-   BYTE
-   ========================================================= */
-
-.transfer {
-
-    height: 25px;
-
-    display: flex;
-
-    align-items: center;
-
-    padding-left: 39px;
-
-    color: #9b9ba1;
-
-    font-size: 11px;
-
-    white-space: nowrap;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-}
-
-
-/* =========================================================
-   GÅNG
-   ========================================================= */
-
-.walk {
-
-    color: #9b9ba1;
-
-    font-size: 11px;
-}
-
-
-/* =========================================================
-   FELTEXT
-   ========================================================= */
-
-.error {
-
-    color: #9b9ba1;
-
-    font-size: 12px;
-
-    margin-top: 5px;
-}
-
+    * {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: transparent;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .widget {
+        width: 100%;
+        padding: 12px 14px;
+        background: #111111;
+        color: white;
+        border-radius: 16px;
+    }
+
+    .title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .trip-row {
+        display: flex;
+        align-items: center;
+        min-height: 34px;
+        gap: 8px;
+    }
+
+    .line {
+        min-width: 42px;
+        height: 26px;
+        padding: 0 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 13px;
+        background: #00a651;
+        color: white;
+        font-size: 14px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .destination {
+        width: 145px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 15px;
+    }
+
+    .time {
+        margin-left: auto;
+        font-size: 15px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .now {
+        font-weight: 800;
+    }
+
+    .transfer {
+        display: flex;
+        align-items: center;
+        min-height: 32px;
+        padding-left: 4px;
+        color: #bcbcbc;
+        font-size: 13px;
+    }
+
+    .arrow {
+        margin: 0 6px;
+        color: #777;
+    }
+
+    .subway {
+        background: #00a651;
+    }
+
+    .walking {
+        color: #999;
+        font-size: 12px;
+        padding-left: 4px;
+    }
+
+    .error {
+        color: #ff7676;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .loading {
+        color: #aaa;
+        font-size: 14px;
+    }
 </style>
-
 </head>
-
 
 <body>
 
-
-<!-- =======================================================
-     RUBRIK
-     ======================================================= -->
-
-<div class="title">
-    Blackeberg
+<div class="widget">
+    <div class="title">Västergöksvägen → Blackeberg</div>
+    <div id="content" class="loading">Hämtar resväg…</div>
 </div>
-
-
-<!-- =======================================================
-     RESVÄG
-     ======================================================= -->
-
-<div
-    id="trip"
-    class="trip"
->
-    Hämtar…
-</div>
-
 
 <script>
+/*
+ * ============================================================
+ * INSTÄLLNINGAR
+ * ============================================================
+ *
+ * ResRobot kräver din egen API-nyckel.
+ *
+ * Klistra in DIN ResRobot v2.1-nyckel här.
+ *
+ * SL Transport API kräver ingen API-nyckel.
+ */
+
+const RESROBOT_KEY = "00080700-932a-4541-bed9-6a2e2aa81bd1";
+
+const RESROBOT_BASE = "https://api.resrobot.se/v2.1";
+const SL_BASE = "https://transport.integration.sl.se/v1";
+
+const ORIGIN_NAME = "Västergöksvägen";
+const DESTINATION_NAME = "Blackeberg";
+
+const content = document.getElementById("content");
 
 
-/* =========================================================
-   RESROBOT
-   ========================================================= */
+/* ============================================================
+   HJÄLPFUNKTIONER
+   ============================================================ */
 
-const RESROBOT_API =
-    "https://api.resrobot.se/v2.1";
-
-const RESROBOT_KEY =
-    "00080700-932a-4541-bed9-6a2e2aa81bd1";
-
-
-/* =========================================================
-   VÄSTERGÖKSVÄGEN
-
-   ResRobot-ID för Västergöksvägen
-   (Vinstavägen).
-
-   Detta är hållplatsen där linje 179
-   bland annat stannar.
-   ========================================================= */
-
-const ORIGIN_ID =
-    "7449901";
-
-
-/* =========================================================
-   SL TRANSPORT
-
-   Kräver ingen API-nyckel.
-   ========================================================= */
-
-const SL_API =
-    "https://transport.integration.sl.se/v1";
-
-
-/* =========================================================
-   WIDGETWEB
-
-   Låt WidgetWeb vänta på API-svaren.
-   ========================================================= */
-
-function __wweb2WaitMillisecondsToWidgetIsReady(
-    currentDelayMs
-) {
-
-    return 3500;
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 
-/* =========================================================
-   NORMALISERA NAMN
+function normalize(value) {
+    return String(value ?? "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[()]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
 
-   Gör det lättare att jämföra:
 
-   "Vällingby T-bana"
-   "Vällingby"
+function timeToMinutes(time) {
+    if (!time) return null;
 
-   "Blackeberg T-bana"
-   "Blackeberg"
-   ========================================================= */
+    const match = String(time).match(/^(\d{1,2}):(\d{2})/);
 
-function normalizeName(
-    value
-) {
+    if (!match) return null;
+
+    return Number(match[1]) * 60 + Number(match[2]);
+}
+
+
+function dateTimeToMs(date, time) {
+    if (!date || !time) return null;
+
+    const value = `${date}T${time}:00`;
+
+    const ms = new Date(value).getTime();
+
+    return Number.isNaN(ms) ? null : ms;
+}
+
+
+function minutesUntil(date, time) {
+    const target = dateTimeToMs(date, time);
+
+    if (target === null) return null;
+
+    return Math.round((target - Date.now()) / 60000);
+}
+
+
+function formatDeparture(date, time) {
+    const mins = minutesUntil(date, time);
+
+    if (mins === null) {
+        return escapeHtml(time || "");
+    }
+
+    if (mins <= 0) {
+        return `<span class="now">Nu</span>`;
+    }
+
+    return `${mins} min`;
+}
+
+
+function getProduct(leg) {
+    if (!leg) return null;
+
+    if (Array.isArray(leg.Product)) {
+        return leg.Product[0] || null;
+    }
+
+    return leg.Product || null;
+}
+
+
+function getLine(leg) {
+    const product = getProduct(leg);
 
     return String(
-        value ?? ""
-    )
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(
-        /[\u0300-\u036f]/g,
+        product?.num ??
+        leg?.number ??
+        leg?.name ??
         ""
-    )
-    .replace(
-        /\s+t-?bana\b/gi,
-        ""
-    )
-    .replace(
-        /\s+t\b/gi,
-        ""
-    )
-    .replace(
-        /\s+/g,
-        " "
-    )
-    .trim();
+    ).trim();
 }
 
 
-/* =========================================================
-   HTML-SÄKERHET
-   ========================================================= */
-
-function escapeHtml(
-    value
-) {
+function getTransportCategory(leg) {
+    const product = getProduct(leg);
 
     return String(
-        value ?? ""
-    )
-    .replace(
-        /&/g,
-        "&amp;"
-    )
-    .replace(
-        /</g,
-        "&lt;"
-    )
-    .replace(
-        />/g,
-        "&gt;"
-    )
-    .replace(
-        /"/g,
-        "&quot;"
-    )
-    .replace(
-        /'/g,
-        "&#039;"
-    );
+        product?.catCode ??
+        product?.catOut ??
+        product?.catIn ??
+        ""
+    ).toLowerCase();
 }
 
 
-/* =========================================================
-   DATUM + TID → DATE
-
-   ResRobot och SL skickar datum/tid
-   separat på vissa ställen.
-   ========================================================= */
-
-function makeDate(
-    date,
-    time
-) {
-
-    if (
-        !date ||
-        !time
-    ) {
-
-        return null;
-    }
-
-
-    const result =
-        new Date(
-            date +
-            "T" +
-            time
-        );
-
-
-    if (
-        isNaN(
-            result.getTime()
-        )
-    ) {
-
-        return null;
-    }
-
-
-    return result;
+function isPublicTransportLeg(leg) {
+    return leg?.type === "JNY";
 }
 
 
-/* =========================================================
-   FORMATERA MINUTER
+function isMetroLeg(leg) {
+    const product = getProduct(leg);
 
-   0 eller mindre → Nu
-   ========================================================= */
-
-function formatMinutes(
-    date
-) {
-
-    if (!date) {
-
-        return "?";
-    }
-
-
-    const now =
-        new Date();
-
-
-    const difference =
-        Math.ceil(
-            (
-                date.getTime() -
-                now.getTime()
-            ) /
-            60000
-        );
-
-
-    if (
-        difference <= 0
-    ) {
-
-        return "Nu";
-    }
-
+    const values = [
+        product?.name,
+        product?.displayName,
+        product?.catName,
+        product?.catOut,
+        product?.catIn,
+        product?.catCode
+    ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
 
     return (
-        difference +
-        " min"
+        values.includes("tunnel") ||
+        values.includes("metro") ||
+        values.includes("subway") ||
+        values.includes("t-bana")
     );
 }
 
 
-/* =========================================================
-   HÄMTA RESROBOT-RESA
-   ========================================================= */
+async function fetchJson(url, label) {
+    const response = await fetch(url, {
+        cache: "no-store"
+    });
 
-async function getResRobotTrips() {
-
-
-    const now =
-        new Date();
-
-
-    /*
-     * ResRobot accepterar att ingen
-     * tid anges = nu.
-     *
-     * Vi hämtar flera alternativa resor.
-     */
-
-    const params =
-        new URLSearchParams({
-
-            format:
-                "json",
-
-            originId:
-                ORIGIN_ID,
-
-            destId:
-                await getBlackebergId(),
-
-            passlist:
-                "1",
-
-            showPassingPoints:
-                "true",
-
-            numF:
-                "5",
-
-            accessId:
-                RESROBOT_KEY,
-
-            lang:
-                "sv"
-
-        });
-
-
-    const response =
-        await fetch(
-            RESROBOT_API +
-            "/trip?" +
-            params.toString(),
-            {
-                cache:
-                    "no-store"
-            }
-        );
-
-
-    if (
-        !response.ok
-    ) {
-
+    if (!response.ok) {
         throw new Error(
-            "ResRobot trip " +
-            response.status
+            `${label}: HTTP ${response.status}`
         );
     }
 
+    let data;
 
-    const data =
-        await response.json();
-
-
-    if (
-        !Array.isArray(
-            data.Trip
-        ) ||
-        data.Trip.length === 0
-    ) {
-
+    try {
+        data = await response.json();
+    } catch {
         throw new Error(
-            "ResRobot hittade ingen resa"
+            `${label}: servern skickade inte giltig JSON`
         );
     }
 
-
-    return data.Trip;
+    return data;
 }
 
 
-/* =========================================================
-   HITTA BLACKEBERG VIA RESROBOT
+/* ============================================================
+   RESROBOT
+   ============================================================ */
 
-   Vi söker exakt på namnet.
-   ========================================================= */
+async function resrobotLookup(name) {
+    const params = new URLSearchParams({
+        input: name,
+        maxNo: "20",
+        format: "json",
+        lang: "sv",
+        accessId: RESROBOT_KEY
+    });
 
-async function getBlackebergId() {
+    const url =
+        `${RESROBOT_BASE}/location.name?${params.toString()}`;
 
+    const data = await fetchJson(
+        url,
+        `ResRobot hållplatssökning (${name})`
+    );
 
-    const params =
-        new URLSearchParams({
+    const stops = data?.StopLocation;
 
-            input:
-                "Blackeberg",
-
-            format:
-                "json",
-
-            accessId:
-                RESROBOT_KEY,
-
-            lang:
-                "sv"
-
-        });
-
-
-    const response =
-        await fetch(
-            RESROBOT_API +
-            "/location.name?" +
-            params.toString(),
-            {
-                cache:
-                    "no-store"
-            }
-        );
-
-
-    if (
-        !response.ok
-    ) {
-
+    if (!Array.isArray(stops) || stops.length === 0) {
         throw new Error(
-            "ResRobot location " +
-            response.status
+            `ResRobot hittade ingen hållplats för "${name}".`
         );
     }
 
-
-    const data =
-        await response.json();
-
-
-    const stops =
-        Array.isArray(
-            data.StopLocation
-        )
-            ? data.StopLocation
-            : [];
-
-
-    if (
-        stops.length === 0
-    ) {
-
-        throw new Error(
-            "Blackeberg hittades inte"
-        );
-    }
-
-
-    /*
-     * Försök först hitta exakt Blackeberg.
-     */
-
-    const exact =
-        stops.find(
-            function(stop) {
-
-                return (
-                    normalizeName(
-                        stop.name
-                    ) ===
-                    "blackeberg"
-                );
-
-            }
-        );
-
-
-    const result =
-        exact ??
-        stops[0];
-
-
-    if (
-        !result.extId
-    ) {
-
-        throw new Error(
-            "Blackeberg saknar extId"
-        );
-    }
-
-
-    return result.extId;
+    return stops;
 }
 
 
-/* =========================================================
-   HÄMTA ALLA SL-SITES
+function chooseStop(stops, wantedName) {
+    const wanted = normalize(wantedName);
 
-   Vi använder SL:s officiella site-lista
-   och hittar rätt hållplats genom namn.
-   ========================================================= */
+    /*
+     * 1. Exakt namn.
+     */
+    const exact = stops.find(
+        stop => normalize(stop.name) === wanted
+    );
 
-let slSitesCache =
-    null;
+    if (exact) return exact;
+
+    /*
+     * 2. Börja med namn som innehåller sökningen.
+     */
+    const contains = stops.find(
+        stop => normalize(stop.name).includes(wanted)
+    );
+
+    if (contains) return contains;
+
+    /*
+     * 3. Annars första resultatet.
+     */
+    return stops[0];
+}
+
+
+async function findResRobotStop(name) {
+    const stops = await resrobotLookup(name);
+
+    return chooseStop(stops, name);
+}
+
+
+function buildTripUrl(originId, destinationId) {
+    const now = new Date();
+
+    const date =
+        `${now.getFullYear()}-` +
+        `${String(now.getMonth() + 1).padStart(2, "0")}-` +
+        `${String(now.getDate()).padStart(2, "0")}`;
+
+    const time =
+        `${String(now.getHours()).padStart(2, "0")}:` +
+        `${String(now.getMinutes()).padStart(2, "0")}`;
+
+    const params = new URLSearchParams({
+        format: "json",
+        originId: originId,
+        destId: destinationId,
+        date: date,
+        time: time,
+        numF: "5",
+        passlist: "1",
+        showPassingPoints: "true",
+        accessId: RESROBOT_KEY
+    });
+
+    return `${RESROBOT_BASE}/trip?${params.toString()}`;
+}
+
+
+async function getTrips(originId, destinationId) {
+    const url = buildTripUrl(originId, destinationId);
+
+    const data = await fetchJson(
+        url,
+        "ResRobot reseplanering"
+    );
+
+    if (data?.error) {
+        throw new Error(
+            `ResRobot: ${data.error.text || data.error.message || "okänt fel"}`
+        );
+    }
+
+    const trips = data?.Trip;
+
+    if (!Array.isArray(trips) || trips.length === 0) {
+        throw new Error(
+            "ResRobot returnerade inga möjliga resor."
+        );
+    }
+
+    return trips;
+}
+
+
+/* ============================================================
+   SL TRANSPORT API
+   ============================================================ */
+
+let slSitesPromise = null;
 
 
 async function getSLSites() {
-
-
-    if (
-        slSitesCache
-    ) {
-
-        return slSitesCache;
-    }
-
-
-    const response =
-        await fetch(
-            SL_API +
-            "/sites?expand=true",
-            {
-                cache:
-                    "no-store"
-            }
-        );
-
-
-    if (
-        !response.ok
-    ) {
-
-        throw new Error(
-            "SL sites " +
-            response.status
+    if (!slSitesPromise) {
+        slSitesPromise = fetchJson(
+            `${SL_BASE}/sites?expand=true`,
+            "SL hållplatslista"
         );
     }
 
-
-    const data =
-        await response.json();
-
-
-    /*
-     * API:t kan returnera listan
-     * direkt eller under "sites".
-     */
-
-    if (
-        Array.isArray(data)
-    ) {
-
-        slSitesCache =
-            data;
-
-    }
-    else if (
-        Array.isArray(
-            data.sites
-        )
-    ) {
-
-        slSitesCache =
-            data.sites;
-
-    }
-    else {
-
-        throw new Error(
-            "SL sites saknas"
-        );
-    }
-
-
-    return slSitesCache;
+    return slSitesPromise;
 }
 
 
-/* =========================================================
-   HITTA SL SITE
-
-   ResRobot kan exempelvis säga:
-
-   "Vällingby T-bana"
-
-   medan SL kan använda:
-
-   "Vällingby"
-
-   normalizeName() tar hand om detta.
-   ========================================================= */
-
-async function findSLStop(
-    name
-) {
-
-
-    const sites =
-        await getSLSites();
-
-
-    const wanted =
-        normalizeName(
-            name
-        );
-
-
-    /*
-     * Försök med exakt namn först.
-     */
-
-    let matches =
-        sites.filter(
-            function(site) {
-
-                return (
-                    normalizeName(
-                        site.name
-                    ) ===
-                    wanted
-                );
-
-            }
-        );
-
-
-    /*
-     * Om exakt matchning saknas,
-     * prova namn som börjar med samma text.
-     */
-
-    if (
-        matches.length === 0
-    ) {
-
-        matches =
-            sites.filter(
-                function(site) {
-
-                    const siteName =
-                        normalizeName(
-                            site.name
-                        );
-
-                    return (
-                        siteName.includes(
-                            wanted
-                        ) ||
-                        wanted.includes(
-                            siteName
-                        )
-                    );
-
-                }
-            );
-
-    }
-
-
-    if (
-        matches.length === 0
-    ) {
-
-        return null;
-    }
-
-
-    /*
-     * Om flera finns försöker vi
-     * välja en med SL-trafik.
-     */
-
-    return matches[0];
+function getSiteName(site) {
+    return String(
+        site?.name ??
+        site?.Name ??
+        ""
+    ).trim();
 }
 
 
-/* =========================================================
-   HÄMTA SL-AVGÅNGAR
-   ========================================================= */
-
-async function getSLDepartures(
-    siteId
-) {
-
-
-    const response =
-        await fetch(
-            SL_API +
-            "/sites/" +
-            encodeURIComponent(
-                siteId
-            ) +
-            "/departures?cache=" +
-            Date.now(),
-            {
-                cache:
-                    "no-store"
-            }
-        );
-
-
-    if (
-        !response.ok
-    ) {
-
-        throw new Error(
-            "SL departures " +
-            response.status
-        );
-    }
-
-
-    const data =
-        await response.json();
-
-
-    if (
-        !Array.isArray(
-            data.departures
-        )
-    ) {
-
-        return [];
-    }
-
-
-    return data.departures;
-}
-
-
-/* =========================================================
-   KONTROLLERA OM SL-AVGÅNG MATCHAR
-   RESROBOT-DELEN
-
-   Vi matchar:
-
-   - linjenummer
-   - riktning
-   - ungefärlig tid
-
-   så att vi inte råkar visa fel fordon.
-   ========================================================= */
-
-function findRealtimeDeparture(
-    departures,
-    leg
-) {
-
-
-    const product =
-        Array.isArray(
-            leg.Product
-        )
-            ? leg.Product[0]
-            : leg.Product;
-
-
-    const wantedLine =
-        String(
-            product?.num ??
-            leg?.number ??
-            ""
-        )
-        .trim();
-
-
-    const wantedDirection =
-        normalizeName(
-            leg?.direction ??
-            leg?.Destination?.name ??
-            ""
-        );
-
+function findSLSite(sites, name) {
+    const wanted = normalize(name);
 
     /*
-     * ResRobots planerade avgång.
+     * Först exakt namn.
      */
-
-    const planned =
-        makeDate(
-            leg?.Origin?.date,
-            leg?.Origin?.time
-        );
-
-
-    /*
-     * Hämta bara kollektivtrafikdelar
-     * med rätt linje.
-     */
-
-    const candidates =
-        departures
-            .filter(
-                function(dep) {
-
-                    const line =
-                        String(
-                            dep?.line
-                                ?.designation ??
-                            ""
-                        )
-                        .trim();
-
-                    return (
-                        line ===
-                        wantedLine
-                    );
-
-                }
-            )
-            .map(
-                function(dep) {
-
-                    /*
-                     * SL Transport använder
-                     * expected / scheduled
-                     * beroende på endpointversion.
-                     */
-
-                    const date =
-                        dep?.expected ??
-                        dep?.scheduled ??
-                        null;
-
-
-                    let realtime =
-                        null;
-
-
-                    if (
-                        date
-                    ) {
-
-                        realtime =
-                            new Date(
-                                date
-                            );
-
-                    }
-
-
-                    /*
-                     * Alternativ struktur:
-                     *
-                     * expectedDate +
-                     * expectedTime
-                     */
-
-                    if (
-                        !realtime ||
-                        isNaN(
-                            realtime.getTime()
-                        )
-                    ) {
-
-                        realtime =
-                            makeDate(
-                                dep?.expectedDate ??
-                                dep?.scheduledDate,
-                                dep?.expectedTime ??
-                                dep?.scheduledTime
-                            );
-
-                    }
-
-
-                    return {
-
-                        departure:
-                            dep,
-
-                        time:
-                            realtime
-
-                    };
-
-                }
-            )
-            .filter(
-                function(item) {
-
-                    return (
-                        item.time &&
-                        !isNaN(
-                            item.time.getTime()
-                        )
-                    );
-
-                }
-            );
-
-
-    if (
-        candidates.length === 0
-    ) {
-
-        return null;
-    }
-
-
-    /*
-     * Försök först hitta rätt riktning.
-     */
-
-    const directionMatches =
-        candidates.filter(
-            function(item) {
-
-                const direction =
-                    normalizeName(
-                        item
-                            ?.departure
-                            ?.direction ??
-                        item
-                            ?.departure
-                            ?.destination ??
-                        ""
-                    );
-
-
-                if (
-                    !direction ||
-                    !wantedDirection
-                ) {
-
-                    return false;
-                }
-
-
-                return (
-                    direction.includes(
-                        wantedDirection
-                    ) ||
-                    wantedDirection.includes(
-                        direction
-                    )
-                );
-
-            }
-        );
-
-
-    const pool =
-        directionMatches.length > 0
-            ? directionMatches
-            : candidates;
-
-
-    /*
-     * Sortera efter aktuell tid.
-     */
-
-    pool.sort(
-        function(a, b) {
-
-            return (
-                a.time.getTime() -
-                b.time.getTime()
-            );
-
-        }
+    let match = sites.find(
+        site => normalize(getSiteName(site)) === wanted
     );
 
-
-    const now =
-        new Date();
-
+    if (match) return match;
 
     /*
-     * Ta nästa avgång.
+     * Därefter tar vi bort eventuella
+     * parenteser och suffix som "(Stockholm)".
      */
+    match = sites.find(site => {
+        const siteName = normalize(getSiteName(site))
+            .replace(/\s*\([^)]*\)\s*$/, "");
 
-    const future =
-        pool.find(
-            function(item) {
+        return siteName === wanted;
+    });
 
-                return (
-                    item.time.getTime() >=
-                    now.getTime() -
-                    30000
-                );
+    if (match) return match;
 
-            }
-        );
-
-
-    if (
-        future
-    ) {
-
-        return future;
-    }
-
-
-    return null;
+    /*
+     * Sist använder vi innehållsmatchning.
+     */
+    return sites.find(site =>
+        normalize(getSiteName(site)).includes(wanted)
+    );
 }
 
 
-/* =========================================================
-   KONTROLLERA EN RESA
-
-   Vi går igenom ResRobots legs.
-
-   För varje buss/tunnelbana försöker vi
-   hitta motsvarande realtidsavgång hos SL.
-   ========================================================= */
-
-async function enrichTripWithRealtime(
-    trip
-) {
+async function getSLDepartures(siteId) {
+    return fetchJson(
+        `${SL_BASE}/sites/${encodeURIComponent(siteId)}/departures`,
+        `SL avgångar för site ${siteId}`
+    );
+}
 
 
-    const legs =
-        trip
-            ?.LegList
-            ?.Leg;
+function departureLine(dep) {
+    return String(
+        dep?.line?.designation ??
+        dep?.line?.name ??
+        dep?.lineDesignation ??
+        ""
+    ).trim();
+}
 
 
-    if (
-        !Array.isArray(
-            legs
-        )
-    ) {
+function departureDestination(dep) {
+    return String(
+        dep?.destination ??
+        dep?.line?.destination ??
+        ""
+    ).trim();
+}
 
+
+function departureScheduled(dep) {
+    return (
+        dep?.scheduled ??
+        dep?.scheduled_time ??
+        dep?.scheduledTime ??
+        null
+    );
+}
+
+
+function departureExpected(dep) {
+    return (
+        dep?.expected ??
+        dep?.expected_time ??
+        dep?.expectedTime ??
+        null
+    );
+}
+
+
+function departureMinutesFromNow(dep) {
+    const value =
+        departureExpected(dep) ||
+        departureScheduled(dep);
+
+    if (!value) return null;
+
+    const timestamp = new Date(value).getTime();
+
+    if (Number.isNaN(timestamp)) {
         return null;
     }
 
-
-    const enriched =
-        [];
-
-
-    for (
-        let i = 0;
-        i < legs.length;
-        i++
-    ) {
+    return Math.round(
+        (timestamp - Date.now()) / 60000
+    );
+}
 
 
-        const leg =
-            legs[i];
+/* ============================================================
+   MATCHA RESROBOT-LEG MOT SL REALTIME
+   ============================================================ */
 
+async function enrichLegWithSL(leg, sites) {
+    const stopName =
+        leg?.Origin?.name ||
+        "";
 
-        /*
-         * Gång.
-         */
+    const line =
+        getLine(leg);
 
-        if (
-            leg.type === "WALK"
-        ) {
-
-            enriched.push({
-
-                type:
-                    "WALK",
-
-                leg:
-                    leg
-
-            });
-
-
-            continue;
-        }
-
-
-        /*
-         * Byte.
-         */
-
-        if (
-            leg.type === "TRSF"
-        ) {
-
-            enriched.push({
-
-                type:
-                    "TRSF",
-
-                leg:
-                    leg
-
-            });
-
-
-            continue;
-        }
-
-
-        /*
-         * Endast faktiska
-         * kollektivtrafiksträckor.
-         */
-
-        if (
-            leg.type !== "JNY"
-        ) {
-
-            continue;
-        }
-
-
-        const originName =
-            leg
-                ?.Origin
-                ?.name ??
-            "";
-
-
-        const site =
-            await findSLStop(
-                originName
-            );
-
-
-        /*
-         * Om SL inte hittar hållplatsen
-         * använder vi ändå ResRobot,
-         * men markerar att realtid saknas.
-         */
-
-        if (
-            !site
-        ) {
-
-            enriched.push({
-
-                type:
-                    "JNY",
-
-                leg:
-                    leg,
-
-                realtime:
-                    null
-
-            });
-
-
-            continue;
-        }
-
-
-        const departures =
-            await getSLDepartures(
-                site.id
-            );
-
-
-        const realtime =
-            findRealtimeDeparture(
-                departures,
-                leg
-            );
-
-
-        enriched.push({
-
-            type:
-                "JNY",
-
-            leg:
-                leg,
-
-            realtime:
-                realtime,
-
-            site:
-                site
-
-        });
-
+    if (!stopName || !line) {
+        return {
+            leg,
+            realtime: null
+        };
     }
 
+    const site = findSLSite(sites, stopName);
+
+    if (!site) {
+        return {
+            leg,
+            realtime: null
+        };
+    }
+
+    const siteId =
+        site?.id ??
+        site?.siteId ??
+        site?.SiteId;
+
+    if (!siteId) {
+        return {
+            leg,
+            realtime: null
+        };
+    }
+
+    const data = await getSLDepartures(siteId);
+
+    const departures =
+        Array.isArray(data?.departures)
+            ? data.departures
+            : [];
+
+    const targetTime =
+        timeToMinutes(leg?.Origin?.time);
+
+    const candidates = departures
+        .filter(dep => {
+            const depLine = departureLine(dep);
+
+            return depLine === line;
+        })
+        .filter(dep => {
+            const depMinutes =
+                departureMinutesFromNow(dep);
+
+            return depMinutes === null || depMinutes >= -1;
+        });
+
+    if (candidates.length === 0) {
+        return {
+            leg,
+            realtime: null
+        };
+    }
+
+    /*
+     * Matcha helst den SL-avgång som ligger närmast
+     * ResRobots planerade avgångstid.
+     */
+    let best = null;
+    let bestDifference = Infinity;
+
+    for (const dep of candidates) {
+        const scheduled =
+            departureScheduled(dep);
+
+        let difference = 999999;
+
+        if (scheduled && targetTime !== null) {
+            const parsed = new Date(scheduled);
+
+            if (!Number.isNaN(parsed.getTime())) {
+                const localMinutes =
+                    parsed.getHours() * 60 +
+                    parsed.getMinutes();
+
+                difference =
+                    Math.abs(localMinutes - targetTime);
+
+                /*
+                 * Hantera midnatt.
+                 */
+                difference =
+                    Math.min(
+                        difference,
+                        1440 - difference
+                    );
+            }
+        }
+
+        /*
+         * Om ingen tid gick att matcha väljer vi
+         * helt enkelt nästa avgång.
+         */
+        if (difference < bestDifference) {
+            bestDifference = difference;
+            best = dep;
+        }
+    }
+
+    /*
+     * Undvik att matcha en helt annan avgång
+     * flera timmar bort.
+     */
+    if (best && bestDifference > 45) {
+        best = null;
+    }
 
     return {
-
-        trip:
-            trip,
-
-        legs:
-            enriched
-
+        leg,
+        realtime: best,
+        site
     };
 }
 
 
-/* =========================================================
+/* ============================================================
    VÄLJ RESA
+   ============================================================ */
 
-   Försöker hitta en av ResRobots
-   alternativa resor där SL också
-   kan hitta aktuella avgångar.
+function getLegs(trip) {
+    const legs =
+        trip?.LegList?.Leg;
 
-   Om ingen komplett realtidsmatchning
-   hittas används första ResRobot-resan.
-   ========================================================= */
-
-async function chooseTrip(
-    trips
-) {
-
-
-    for (
-        const trip of trips
-    ) {
-
-
-        try {
-
-            const enriched =
-                await enrichTripWithRealtime(
-                    trip
-                );
-
-
-            if (
-                !enriched
-            ) {
-
-                continue;
-            }
-
-
-            const transitLegs =
-                enriched.legs.filter(
-                    function(item) {
-
-                        return (
-                            item.type ===
-                            "JNY"
-                        );
-
-                    }
-                );
-
-
-            /*
-             * Om alla kollektivtrafikdelar
-             * har realtid har vi en bra
-             * komplett resa.
-             */
-
-            const realtimeCount =
-                transitLegs.filter(
-                    function(item) {
-
-                        return (
-                            item.realtime
-                        );
-
-                    }
-                ).length;
-
-
-            if (
-                transitLegs.length > 0 &&
-                realtimeCount ===
-                    transitLegs.length
-            ) {
-
-                return enriched;
-            }
-
-
-        }
-        catch (
-            error
-        ) {
-
-            console.warn(
-                "Kunde inte kontrollera resa:",
-                error
-            );
-
-        }
-
+    if (!Array.isArray(legs)) {
+        return [];
     }
 
-
-    /*
-     * Fallback:
-     * visa första ResRobot-resan.
-     */
-
-    return enrichTripWithRealtime(
-        trips[0]
-    );
+    return legs;
 }
 
 
-/* =========================================================
-   VISA RESAN
-   ========================================================= */
-
-function renderTrip(
-    enriched
-) {
+function tripHasUsefulPublicTransport(trip) {
+    return getLegs(trip)
+        .some(isPublicTransportLeg);
+}
 
 
-    const container =
-        document.getElementById(
-            "trip"
-        );
+async function enrichTrip(trip, sites) {
+    const legs = getLegs(trip);
 
+    const enriched = [];
 
-    container.innerHTML =
-        "";
-
-
-    const legs =
-        enriched.legs;
-
-
-    for (
-        let i = 0;
-        i < legs.length;
-        i++
-    ) {
-
-
-        const item =
-            legs[i];
-
-
-        const leg =
-            item.leg;
-
-
-        /* =================================================
-           GÅNG
-           ================================================= */
-
-        if (
-            item.type === "WALK"
-        ) {
-
-
-            const row =
-                document.createElement(
-                    "div"
+    for (const leg of legs) {
+        if (isPublicTransportLeg(leg)) {
+            try {
+                enriched.push(
+                    await enrichLegWithSL(
+                        leg,
+                        sites
+                    )
                 );
-
-
-            row.className =
-                "trip-row";
-
-
-            row.innerHTML = `
-
-                <div class="line">
-                    →
-                </div>
-
-                <div class="destination walk">
-
-                    ${escapeHtml(
-                        leg
-                            ?.Destination
-                            ?.name ??
-                        "Gå"
-                    )}
-
-                </div>
-
-            `;
-
-
-            container.appendChild(
-                row
-            );
-
-
-            continue;
-        }
-
-
-        /* =================================================
-           BYTE
-           ================================================= */
-
-        if (
-            item.type === "TRSF"
-        ) {
-
-
-            const transfer =
-                document.createElement(
-                    "div"
-                );
-
-
-            transfer.className =
-                "transfer";
-
-
-            transfer.textContent =
-                "Byte vid " +
-                (
-                    leg
-                        ?.Destination
-                        ?.name ??
-                    ""
-                );
-
-
-            container.appendChild(
-                transfer
-            );
-
-
-            continue;
-        }
-
-
-        /* =================================================
-           KOLLEKTIVTRAFIK
-           ================================================= */
-
-        if (
-            item.type === "JNY"
-        ) {
-
-
-            const product =
-                Array.isArray(
-                    leg.Product
-                )
-                    ? leg.Product[0]
-                    : leg.Product;
-
-
-            const line =
-                String(
-                    product?.num ??
-                    leg?.number ??
-                    "?"
-                );
-
-
-            const direction =
-                leg?.direction ??
-                leg
-                    ?.Destination
-                    ?.name ??
-                "";
-
-
-            /*
-             * Om SL hittade realtid
-             * använder vi den.
-             *
-             * Annars ResRobots
-             * planerade tid.
-             */
-
-            let departureDate =
-                null;
-
-
-            if (
-                item.realtime
-            ) {
-
-                departureDate =
-                    item.realtime.time;
-
+            } catch {
+                /*
+                 * Om SL-uppslaget för en viss leg
+                 * misslyckas låter vi ändå ResRobot-resan
+                 * fortsätta fungera.
+                 */
+                enriched.push({
+                    leg,
+                    realtime: null
+                });
             }
+        } else {
+            enriched.push({
+                leg,
+                realtime: null
+            });
+        }
+    }
+
+    return enriched;
+}
 
 
-            if (
-                !departureDate
-            ) {
+function scoreTrip(enrichedTrip) {
+    let score = 0;
 
-                departureDate =
-                    makeDate(
-                        leg
-                            ?.Origin
-                            ?.date,
-                        leg
-                            ?.Origin
-                            ?.time
+    for (const item of enrichedTrip) {
+        if (!isPublicTransportLeg(item.leg)) {
+            continue;
+        }
+
+        /*
+         * En realtidsmatch är bättre än enbart
+         * statisk ResRobot-tid.
+         */
+        if (item.realtime) {
+            score += 100;
+        }
+    }
+
+    return score;
+}
+
+
+/* ============================================================
+   VISA RESAN
+   ============================================================ */
+
+function renderTransportLeg(item) {
+    const leg = item.leg;
+    const realtime = item.realtime;
+
+    const line = escapeHtml(
+        getLine(leg)
+    );
+
+    const destination = escapeHtml(
+        realtime
+            ? departureDestination(realtime) ||
+              leg?.direction ||
+              leg?.Destination?.name ||
+              ""
+            : leg?.direction ||
+              leg?.Destination?.name ||
+              ""
+    );
+
+    /*
+     * Om SL har en realtidsavgång använder vi dess
+     * expected-tid. Annars använder vi ResRobots
+     * statiska tid.
+     */
+    if (realtime) {
+        const expected =
+            departureExpected(realtime);
+
+        const scheduled =
+            departureScheduled(realtime);
+
+        let timeHtml = "";
+
+        if (expected) {
+            const timestamp =
+                new Date(expected).getTime();
+
+            if (!Number.isNaN(timestamp)) {
+                const mins =
+                    Math.round(
+                        (timestamp - Date.now()) /
+                        60000
                     );
 
+                timeHtml =
+                    mins <= 0
+                        ? `<span class="now">Nu</span>`
+                        : `${mins} min`;
             }
+        }
 
+        if (!timeHtml && scheduled) {
+            const timestamp =
+                new Date(scheduled).getTime();
 
-            const formattedTime =
-                formatMinutes(
-                    departureDate
+            if (!Number.isNaN(timestamp)) {
+                const mins =
+                    Math.round(
+                        (timestamp - Date.now()) /
+                        60000
+                    );
+
+                timeHtml =
+                    mins <= 0
+                        ? `<span class="now">Nu</span>`
+                        : `${mins} min`;
+            }
+        }
+
+        if (!timeHtml) {
+            timeHtml =
+                escapeHtml(
+                    leg?.Origin?.time || ""
                 );
+        }
 
-
-            const row =
-                document.createElement(
-                    "div"
-                );
-
-
-            row.className =
-                "trip-row";
-
-
-            row.innerHTML = `
-
-                <div class="line">
-                    ${escapeHtml(line)}
+        return `
+            <div class="trip-row">
+                <div class="line ${
+                    isMetroLeg(leg)
+                        ? "subway"
+                        : ""
+                }">
+                    ${line}
                 </div>
 
                 <div class="destination">
-
-                    ${escapeHtml(
-                        direction
-                    )}
-
+                    ${destination}
                 </div>
 
-                <div
-                    class="
-                        time
-                        ${
-                            formattedTime ===
-                            "Nu"
-                                ? "now"
-                                : ""
-                        }
-                    "
-                >
-
-                    ${escapeHtml(
-                        formattedTime
-                    )}
-
+                <div class="time">
+                    ${timeHtml}
                 </div>
+            </div>
+        `;
+    }
 
-            `;
+    /*
+     * Fallback till ResRobot.
+     */
+    return `
+        <div class="trip-row">
+            <div class="line ${
+                isMetroLeg(leg)
+                    ? "subway"
+                    : ""
+            }">
+                ${line}
+            </div>
 
+            <div class="destination">
+                ${destination}
+            </div>
 
-            container.appendChild(
-                row
-            );
-
-
-            /*
-             * Om nästa kollektivtrafikdel
-             * kräver byte.
-             */
-
-            const next =
-                legs[i + 1];
-
-
-            if (
-                next &&
-                next.type ===
-                    "JNY"
-            ) {
-
-
-                const nextLine =
-                    String(
-                        next
-                            ?.leg
-                            ?.Product
-                            ?.num ??
-                        (
-                            Array.isArray(
-                                next
-                                    ?.leg
-                                    ?.Product
-                            )
-                                ? next
-                                    .leg
-                                    .Product[0]
-                                    ?.num
-                                : ""
-                        ) ??
-                        ""
-                    );
+            <div class="time">
+                ${formatDeparture(
+                    leg?.Origin?.date,
+                    leg?.Origin?.time
+                )}
+            </div>
+        </div>
+    `;
+}
 
 
-                const transfer =
-                    document.createElement(
-                        "div"
-                    );
+function renderTransfer(fromLeg, toLeg) {
+    const from =
+        escapeHtml(
+            fromLeg?.Destination?.name || ""
+        );
+
+    const to =
+        escapeHtml(
+            toLeg?.Origin?.name || ""
+        );
+
+    /*
+     * Om hållplatsen är samma behöver vi inte
+     * visa "från → till".
+     */
+    if (
+        normalize(from) ===
+        normalize(to)
+    ) {
+        return `
+            <div class="transfer">
+                Byte vid ${from}
+            </div>
+        `;
+    }
+
+    return `
+        <div class="transfer">
+            Byte vid ${from}
+            <span class="arrow">→</span>
+            ${to}
+        </div>
+    `;
+}
 
 
-                transfer.className =
-                    "transfer";
+function renderWalking(leg) {
+    if (!leg) return "";
+
+    const distance =
+        Number(leg.dist);
+
+    if (
+        Number.isFinite(distance) &&
+        distance > 0
+    ) {
+        return `
+            <div class="walking">
+                Gå ${Math.round(distance)} m
+            </div>
+        `;
+    }
+
+    return `
+        <div class="walking">
+            Gå till nästa hållplats
+        </div>
+    `;
+}
 
 
-                transfer.textContent =
-                    "Byte vid " +
-                    (
-                        leg
-                            ?.Destination
-                            ?.name ??
-                        ""
-                    );
+function renderTrip(enriched) {
+    let html = "";
 
+    for (let i = 0; i < enriched.length; i++) {
+        const current =
+            enriched[i];
 
-                container.appendChild(
-                    transfer
-                );
+        const leg =
+            current.leg;
 
-            }
-
+        if (leg.type === "WALK") {
+            html += renderWalking(leg);
+            continue;
         }
 
+        if (leg.type !== "JNY") {
+            continue;
+        }
+
+        html += renderTransportLeg(current);
+
+        /*
+         * Leta efter nästa kollektivtrafik-leg.
+         */
+        let nextIndex = i + 1;
+
+        while (
+            nextIndex < enriched.length &&
+            enriched[nextIndex].leg.type !== "JNY"
+        ) {
+            /*
+             * Om det finns en WALK mellan två
+             * kollektivtrafikben visar vi den.
+             */
+            const intermediate =
+                enriched[nextIndex].leg;
+
+            if (intermediate.type === "WALK") {
+                html += renderWalking(
+                    intermediate
+                );
+            }
+
+            nextIndex++;
+        }
+
+        if (nextIndex < enriched.length) {
+            const next =
+                enriched[nextIndex].leg;
+
+            html += renderTransfer(
+                leg,
+                next
+            );
+        }
+    }
+
+    return html;
+}
+
+
+/* ============================================================
+   HUVUDPROGRAM
+   ============================================================ */
+
+async function main() {
+
+    if (
+        !RESROBOT_KEY ||
+        RESROBOT_KEY ===
+            "PASTE_YOUR_RESROBOT_KEY_HERE"
+    ) {
+        throw new Error(
+            "ResRobot API-nyckeln saknas. " +
+            "Fyll i RESROBOT_KEY längst upp i koden."
+        );
+    }
+
+    /*
+     * 1. Hämta Västergöksvägen dynamiskt.
+     *
+     * Vi använder fortfarande den verifierade
+     * hållplatsen 7449901 som första val, men gör
+     * samtidigt en lookup så att koden inte är
+     * beroende av ett gammalt hårdkodat ID.
+     */
+    let origin;
+
+    try {
+        origin = await findResRobotStop(
+            ORIGIN_NAME
+        );
+    } catch (error) {
+        /*
+         * Känd verifierad ResRobot-hållplats:
+         * Västergöksvägen = 7449901.
+         *
+         * Fallback om location.name skulle
+         * ligga nere.
+         */
+        origin = {
+            name: ORIGIN_NAME,
+            extId: "7449901"
+        };
+    }
+
+    if (!origin?.extId) {
+        throw new Error(
+            `Hittade Västergöksvägen men inget ResRobot-id.`
+        );
     }
 
 
     /*
-     * Liten attribution enligt
-     * Trafiklabs realtime API-licens.
+     * 2. Hämta Blackeberg.
      */
+    const destination =
+        await findResRobotStop(
+            DESTINATION_NAME
+        );
 
-    const attribution =
-        document.createElement(
-            "div"
+    if (!destination?.extId) {
+        throw new Error(
+            `Hittade Blackeberg men inget ResRobot-id.`
+        );
+    }
+
+
+    /*
+     * 3. Hämta möjliga resor.
+     */
+    const trips =
+        await getTrips(
+            origin.extId,
+            destination.extId
         );
 
 
-    attribution.className =
-        "error";
+    /*
+     * 4. Hämta SL:s site-lista.
+     */
+    const sites =
+        await getSLSites();
+
+    if (!Array.isArray(sites)) {
+        throw new Error(
+            "SL returnerade ingen giltig hållplatslista."
+        );
+    }
 
 
-    attribution.textContent =
-        "Data från Trafiklab";
+    /*
+     * 5. Lägg på SL realtidsdata.
+     */
+    const enrichedTrips = [];
+
+    for (const trip of trips) {
+        if (!tripHasUsefulPublicTransport(trip)) {
+            continue;
+        }
+
+        const enriched =
+            await enrichTrip(
+                trip,
+                sites
+            );
+
+        enrichedTrips.push(enriched);
+    }
 
 
-    container.appendChild(
-        attribution
+    if (enrichedTrips.length === 0) {
+        throw new Error(
+            "ResRobot hittade resor, men ingen innehöll kollektivtrafik."
+        );
+    }
+
+
+    /*
+     * 6. Välj den resa där vi lyckats få
+     * realtidsdata från SL.
+     *
+     * Om flera är lika bra tar vi den första.
+     */
+    enrichedTrips.sort(
+        (a, b) =>
+            scoreTrip(b) -
+            scoreTrip(a)
     );
+
+    const selected =
+        enrichedTrips[0];
+
+
+    /*
+     * 7. Rita.
+     */
+    const html =
+        renderTrip(selected);
+
+    if (!html.trim()) {
+        throw new Error(
+            "Resan hämtades men kunde inte visas."
+        );
+    }
+
+    content.innerHTML = html;
 }
 
 
-/* =========================================================
-   HUVUDFUNKTION
-   ========================================================= */
+/* ============================================================
+   START + FELHANTERING
+   ============================================================ */
 
-async function loadTrip() {
-
-
-    const container =
-        document.getElementById(
-            "trip"
-        );
-
-
-    try {
-
-
-        /*
-         * 1. ResRobot räknar ut
-         *    själva resvägen.
-         */
-
-        const trips =
-            await getResRobotTrips();
-
-
-        /*
-         * 2. SL:s realtidsdata läggs
-         *    ovanpå ResRobot-resan.
-         */
-
-        const selected =
-            await chooseTrip(
-                trips
-            );
-
-
-        if (
-            !selected
-        ) {
-
-            throw new Error(
-                "Ingen användbar resa hittades"
-            );
-        }
-
-
-        /*
-         * 3. Visa resultatet.
-         */
-
-        renderTrip(
-            selected
-        );
-
-
-    }
-    catch (
-        error
-    ) {
-
-
+main()
+    .catch(error => {
         console.error(
+            "Västergöksvägen → Blackeberg:",
             error
         );
 
+        content.innerHTML = `
+            <div class="error">
+                ${escapeHtml(
+                    error?.message ||
+                    "Okänt fel"
+                )}
+            </div>
+        `;
+    });
 
-        container.innerHTML =
-            '<div class="error">' +
-            'Kunde inte hämta resväg' +
-            '</div>';
 
-
+/*
+ * WidgetWeb readiness hook.
+ */
+window.addEventListener(
+    "load",
+    () => {
         if (
-            typeof __wweb2Log ===
-            "function"
+            typeof window.WidgetWeb !==
+            "undefined"
         ) {
-
-            __wweb2Log(
-                "SL/ResRobot error: " +
-                error.message
-            );
-
+            window.WidgetWeb.ready();
         }
-
     }
-
-}
-
-
-/* =========================================================
-   STARTA
-   ========================================================= */
-
-loadTrip();
-
+);
 </script>
 
-
 </body>
-
 </html>
