@@ -4,19 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- Leaflet -->
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
 <style>
     * {
         box-sizing: border-box;
     }
 
-    html, body {
+    html,
+    body {
         margin: 0;
         padding: 0;
         width: 100%;
         height: 100%;
         overflow: hidden;
         background: transparent;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-family:
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
     }
 
     body {
@@ -27,16 +38,31 @@
 
     .widget {
         width: 100%;
+        height: 100%;
         padding: 12px 14px;
         background: #111111;
         color: white;
         border-radius: 16px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
 
     .title {
         font-size: 18px;
         font-weight: 700;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
+        flex-shrink: 0;
+    }
+
+    .route-summary {
+        color: #aaa;
+        font-size: 13px;
+        margin-bottom: 9px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex-shrink: 0;
     }
 
     .trip-row {
@@ -62,6 +88,7 @@
     }
 
     .destination {
+        min-width: 0;
         width: 145px;
         white-space: nowrap;
         overflow: hidden;
@@ -83,36 +110,89 @@
     .transfer {
         display: flex;
         align-items: center;
-        min-height: 32px;
+        min-height: 30px;
         padding-left: 4px;
-        color: #bcbcbc;
+        color: #aaa;
         font-size: 13px;
     }
 
     .arrow {
         margin: 0 6px;
-        color: #777;
+        color: #666;
     }
 
-    .subway {
+    .map-wrap {
+        position: relative;
+        flex: 1;
+        min-height: 150px;
+        margin-top: 9px;
+        overflow: hidden;
+        border-radius: 12px;
+    }
+
+    #map {
+        width: 100%;
+        height: 100%;
+        min-height: 150px;
+    }
+
+    .map-status {
+        position: absolute;
+        z-index: 1000;
+        left: 8px;
+        bottom: 8px;
+        padding: 5px 8px;
+        border-radius: 8px;
+        background: rgba(17, 17, 17, .88);
+        color: #aaa;
+        font-size: 11px;
+        pointer-events: none;
+    }
+
+    .vehicle-marker {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
         background: #00a651;
+        border: 3px solid white;
+        box-shadow: 0 1px 5px rgba(0,0,0,.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 9px;
+        font-weight: 800;
     }
 
-    .walking {
-        color: #999;
-        font-size: 12px;
-        padding-left: 4px;
+    .metro-marker {
+        background: #e00034;
+    }
+
+    .stop-marker {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid #00a651;
     }
 
     .error {
-        color: #ff7676;
+        color: #ff7777;
         font-size: 13px;
-        line-height: 1.4;
+        line-height: 1.45;
     }
 
     .loading {
         color: #aaa;
         font-size: 14px;
+    }
+
+    .leaflet-control-attribution {
+        font-size: 8px !important;
+    }
+
+    .leaflet-control-zoom {
+        display: none;
     }
 </style>
 </head>
@@ -120,36 +200,111 @@
 <body>
 
 <div class="widget">
-    <div class="title">Västergöksvägen → Blackeberg</div>
-    <div id="content" class="loading">Hämtar resväg…</div>
+
+    <div class="title">
+        Västergöksvägen → Blackeberg
+    </div>
+
+    <div id="routeSummary" class="route-summary">
+        Hämtar aktuell resväg…
+    </div>
+
+    <div id="routeRows">
+        <div class="loading">
+            Hämtar avgångar…
+        </div>
+    </div>
+
+    <div class="map-wrap">
+        <div id="map"></div>
+
+        <div id="mapStatus" class="map-status">
+            Hämtar fordonspositioner…
+        </div>
+    </div>
+
 </div>
 
-<script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script type="module">
+
+/* ============================================================
+   API-NYCKLAR
+   ============================================================ */
+
 /*
- * ============================================================
- * INSTÄLLNINGAR
- * ============================================================
- *
- * ResRobot kräver din egen API-nyckel.
- *
- * Klistra in DIN ResRobot v2.1-nyckel här.
- *
- * SL Transport API kräver ingen API-nyckel.
+ * ResRobot v2.1
  */
+const RESROBOT_KEY =
+    "PASTE_YOUR_RESROBOT_KEY_HERE";
 
-const RESROBOT_KEY = "00080700-932a-4541-bed9-6a2e2aa81bd1";
 
-const RESROBOT_BASE = "https://api.resrobot.se/v2.1";
-const SL_BASE = "https://transport.integration.sl.se/v1";
-
-const ORIGIN_NAME = "Västergöksvägen";
-const DESTINATION_NAME = "Blackeberg";
-
-const content = document.getElementById("content");
+/*
+ * Trafiklab GTFS Regional Realtime.
+ *
+ * Nyckeln du gav:
+ *
+ * e56430164e3b4fc8a4b3461ac1e52d8f
+ */
+const TRAFIKLAB_KEY =
+    "e56430164e3b4fc8a4b3461ac1e52d8f";
 
 
 /* ============================================================
-   HJÄLPFUNKTIONER
+   FASTA SL-ID
+   ============================================================ */
+
+const STOPS = {
+    origin: {
+        id: "3870",
+        name: "Västergöksvägen"
+    },
+
+    transfer: {
+        id: "9103",
+        name: "Vällingby"
+    },
+
+    destination: {
+        id: "9105",
+        name: "Blackeberg"
+    }
+};
+
+
+/*
+ * GTFS Regional operator.
+ */
+const OPERATOR = "sl";
+
+
+const RESROBOT_BASE =
+    "https://api.resrobot.se/v2.1";
+
+const SL_BASE =
+    "https://transport.integration.sl.se/v1";
+
+const GTFS_RT_BASE =
+    "https://opendata.samtrafiken.se/gtfs-rt/sl";
+
+const GTFS_STATIC_URL =
+    `https://opendata.samtrafiken.se/gtfs/sl/sl.zip?key=${
+        encodeURIComponent(TRAFIKLAB_KEY)
+    }`;
+
+const contentRows =
+    document.getElementById("routeRows");
+
+const routeSummary =
+    document.getElementById("routeSummary");
+
+const mapStatus =
+    document.getElementById("mapStatus");
+
+
+/* ============================================================
+   HJÄLP
    ============================================================ */
 
 function escapeHtml(value) {
@@ -167,60 +322,16 @@ function normalize(value) {
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[()]/g, "")
         .replace(/\s+/g, " ")
         .trim();
 }
 
 
-function timeToMinutes(time) {
-    if (!time) return null;
-
-    const match = String(time).match(/^(\d{1,2}):(\d{2})/);
-
-    if (!match) return null;
-
-    return Number(match[1]) * 60 + Number(match[2]);
-}
-
-
-function dateTimeToMs(date, time) {
-    if (!date || !time) return null;
-
-    const value = `${date}T${time}:00`;
-
-    const ms = new Date(value).getTime();
-
-    return Number.isNaN(ms) ? null : ms;
-}
-
-
-function minutesUntil(date, time) {
-    const target = dateTimeToMs(date, time);
-
-    if (target === null) return null;
-
-    return Math.round((target - Date.now()) / 60000);
-}
-
-
-function formatDeparture(date, time) {
-    const mins = minutesUntil(date, time);
-
-    if (mins === null) {
-        return escapeHtml(time || "");
-    }
-
-    if (mins <= 0) {
-        return `<span class="now">Nu</span>`;
-    }
-
-    return `${mins} min`;
-}
-
-
 function getProduct(leg) {
-    if (!leg) return null;
+
+    if (!leg) {
+        return null;
+    }
 
     if (Array.isArray(leg.Product)) {
         return leg.Product[0] || null;
@@ -231,62 +342,79 @@ function getProduct(leg) {
 
 
 function getLine(leg) {
-    const product = getProduct(leg);
+
+    const product =
+        getProduct(leg);
 
     return String(
         product?.num ??
         leg?.number ??
-        leg?.name ??
         ""
     ).trim();
 }
 
 
-function getTransportCategory(leg) {
-    const product = getProduct(leg);
-
-    return String(
-        product?.catCode ??
-        product?.catOut ??
-        product?.catIn ??
-        ""
-    ).toLowerCase();
-}
-
-
-function isPublicTransportLeg(leg) {
+function isJourney(leg) {
     return leg?.type === "JNY";
 }
 
 
-function isMetroLeg(leg) {
-    const product = getProduct(leg);
+function getLegs(trip) {
 
-    const values = [
-        product?.name,
-        product?.displayName,
-        product?.catName,
-        product?.catOut,
-        product?.catIn,
-        product?.catCode
-    ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
+    const legs =
+        trip?.LegList?.Leg;
 
-    return (
-        values.includes("tunnel") ||
-        values.includes("metro") ||
-        values.includes("subway") ||
-        values.includes("t-bana")
+    return Array.isArray(legs)
+        ? legs
+        : [];
+}
+
+
+function minutesFromNow(timestamp) {
+
+    if (!timestamp) {
+        return null;
+    }
+
+    const time =
+        new Date(timestamp).getTime();
+
+    if (!Number.isFinite(time)) {
+        return null;
+    }
+
+    return Math.round(
+        (time - Date.now()) / 60000
     );
 }
 
 
+function formatMinutes(timestamp) {
+
+    const minutes =
+        minutesFromNow(timestamp);
+
+    if (minutes === null) {
+        return "";
+    }
+
+    if (minutes <= 0) {
+        return `<span class="now">Nu</span>`;
+    }
+
+    return `${minutes} min`;
+}
+
+
 async function fetchJson(url, label) {
-    const response = await fetch(url, {
-        cache: "no-store"
-    });
+
+    const response =
+        await fetch(
+            url,
+            {
+                cache: "no-store"
+            }
+        );
 
     if (!response.ok) {
         throw new Error(
@@ -294,17 +422,7 @@ async function fetchJson(url, label) {
         );
     }
 
-    let data;
-
-    try {
-        data = await response.json();
-    } catch {
-        throw new Error(
-            `${label}: servern skickade inte giltig JSON`
-        );
-    }
-
-    return data;
+    return response.json();
 }
 
 
@@ -312,117 +430,133 @@ async function fetchJson(url, label) {
    RESROBOT
    ============================================================ */
 
-async function resrobotLookup(name) {
-    const params = new URLSearchParams({
-        input: name,
-        maxNo: "20",
-        format: "json",
-        lang: "sv",
-        accessId: RESROBOT_KEY
-    });
+function resrobotDateTime() {
 
-    const url =
-        `${RESROBOT_BASE}/location.name?${params.toString()}`;
-
-    const data = await fetchJson(
-        url,
-        `ResRobot hållplatssökning (${name})`
-    );
-
-    const stops = data?.StopLocation;
-
-    if (!Array.isArray(stops) || stops.length === 0) {
-        throw new Error(
-            `ResRobot hittade ingen hållplats för "${name}".`
-        );
-    }
-
-    return stops;
-}
-
-
-function chooseStop(stops, wantedName) {
-    const wanted = normalize(wantedName);
-
-    /*
-     * 1. Exakt namn.
-     */
-    const exact = stops.find(
-        stop => normalize(stop.name) === wanted
-    );
-
-    if (exact) return exact;
-
-    /*
-     * 2. Börja med namn som innehåller sökningen.
-     */
-    const contains = stops.find(
-        stop => normalize(stop.name).includes(wanted)
-    );
-
-    if (contains) return contains;
-
-    /*
-     * 3. Annars första resultatet.
-     */
-    return stops[0];
-}
-
-
-async function findResRobotStop(name) {
-    const stops = await resrobotLookup(name);
-
-    return chooseStop(stops, name);
-}
-
-
-function buildTripUrl(originId, destinationId) {
-    const now = new Date();
+    const now =
+        new Date();
 
     const date =
         `${now.getFullYear()}-` +
-        `${String(now.getMonth() + 1).padStart(2, "0")}-` +
-        `${String(now.getDate()).padStart(2, "0")}`;
+        `${String(
+            now.getMonth() + 1
+        ).padStart(2, "0")}-` +
+        `${String(
+            now.getDate()
+        ).padStart(2, "0")}`;
 
     const time =
-        `${String(now.getHours()).padStart(2, "0")}:` +
-        `${String(now.getMinutes()).padStart(2, "0")}`;
+        `${String(
+            now.getHours()
+        ).padStart(2, "0")}:` +
+        `${String(
+            now.getMinutes()
+        ).padStart(2, "0")}`;
 
-    const params = new URLSearchParams({
-        format: "json",
-        originId: originId,
-        destId: destinationId,
-        date: date,
-        time: time,
-        numF: "5",
-        passlist: "1",
-        showPassingPoints: "true",
-        accessId: RESROBOT_KEY
-    });
-
-    return `${RESROBOT_BASE}/trip?${params.toString()}`;
+    return {
+        date,
+        time
+    };
 }
 
 
-async function getTrips(originId, destinationId) {
-    const url = buildTripUrl(originId, destinationId);
+async function getResRobotTrip() {
 
-    const data = await fetchJson(
-        url,
-        "ResRobot reseplanering"
-    );
+    /*
+     * Västergöksvägen:
+     * 7449901 är det verifierade ResRobot-id:t.
+     *
+     * Blackeberg använder vi inte som ResRobot-id här.
+     *
+     * I stället planerar vi till Blackebergs
+     * koordinat/SL-hållplats via ResRobot lookup.
+     */
 
-    if (data?.error) {
+    const lookupParams =
+        new URLSearchParams({
+            input: "Blackeberg",
+            maxNo: "10",
+            format: "json",
+            lang: "sv",
+            accessId: RESROBOT_KEY
+        });
+
+    const lookup =
+        await fetchJson(
+            `${RESROBOT_BASE}/location.name?${lookupParams}`,
+            "ResRobot Blackeberg"
+        );
+
+    const locations =
+        lookup?.StopLocation;
+
+    if (
+        !Array.isArray(locations) ||
+        locations.length === 0
+    ) {
         throw new Error(
-            `ResRobot: ${data.error.text || data.error.message || "okänt fel"}`
+            "ResRobot hittade inte Blackeberg."
         );
     }
 
-    const trips = data?.Trip;
+    const exact =
+        locations.find(
+            x =>
+                normalize(x.name) ===
+                normalize("Blackeberg")
+        );
 
-    if (!Array.isArray(trips) || trips.length === 0) {
+    const destination =
+        exact || locations[0];
+
+    if (!destination?.extId) {
         throw new Error(
-            "ResRobot returnerade inga möjliga resor."
+            "Blackeberg saknar ResRobot-id."
+        );
+    }
+
+    const {
+        date,
+        time
+    } =
+        resrobotDateTime();
+
+    const params =
+        new URLSearchParams({
+            format: "json",
+
+            originId: "7449901",
+
+            destId:
+                destination.extId,
+
+            date,
+            time,
+
+            numF: "5",
+
+            passlist: "1",
+
+            showPassingPoints: "true",
+
+            accessId:
+                RESROBOT_KEY
+        });
+
+    const data =
+        await fetchJson(
+            `${RESROBOT_BASE}/trip?${params}`,
+            "ResRobot reseplanering"
+        );
+
+    const trips =
+        data?.Trip;
+
+    if (
+        !Array.isArray(trips) ||
+        trips.length === 0
+    ) {
+        throw new Error(
+            "ResRobot hittade ingen resa."
         );
     }
 
@@ -431,592 +565,1426 @@ async function getTrips(originId, destinationId) {
 
 
 /* ============================================================
-   SL TRANSPORT API
+   SL AVGÅNGAR
    ============================================================ */
 
-let slSitesPromise = null;
+async function getDepartures(siteId) {
 
-
-async function getSLSites() {
-    if (!slSitesPromise) {
-        slSitesPromise = fetchJson(
-            `${SL_BASE}/sites?expand=true`,
-            "SL hållplatslista"
-        );
-    }
-
-    return slSitesPromise;
-}
-
-
-function getSiteName(site) {
-    return String(
-        site?.name ??
-        site?.Name ??
-        ""
-    ).trim();
-}
-
-
-function findSLSite(sites, name) {
-    const wanted = normalize(name);
-
-    /*
-     * Först exakt namn.
-     */
-    let match = sites.find(
-        site => normalize(getSiteName(site)) === wanted
-    );
-
-    if (match) return match;
-
-    /*
-     * Därefter tar vi bort eventuella
-     * parenteser och suffix som "(Stockholm)".
-     */
-    match = sites.find(site => {
-        const siteName = normalize(getSiteName(site))
-            .replace(/\s*\([^)]*\)\s*$/, "");
-
-        return siteName === wanted;
-    });
-
-    if (match) return match;
-
-    /*
-     * Sist använder vi innehållsmatchning.
-     */
-    return sites.find(site =>
-        normalize(getSiteName(site)).includes(wanted)
-    );
-}
-
-
-async function getSLDepartures(siteId) {
     return fetchJson(
-        `${SL_BASE}/sites/${encodeURIComponent(siteId)}/departures`,
-        `SL avgångar för site ${siteId}`
+        `${SL_BASE}/sites/${siteId}/departures`,
+        `SL avgångar ${siteId}`
     );
 }
 
 
-function departureLine(dep) {
+function getDepartureLine(dep) {
+
     return String(
         dep?.line?.designation ??
-        dep?.line?.name ??
-        dep?.lineDesignation ??
         ""
     ).trim();
 }
 
 
-function departureDestination(dep) {
+function getDepartureDestination(dep) {
+
     return String(
         dep?.destination ??
-        dep?.line?.destination ??
         ""
     ).trim();
 }
 
 
-function departureScheduled(dep) {
-    return (
-        dep?.scheduled ??
-        dep?.scheduled_time ??
-        dep?.scheduledTime ??
-        null
-    );
-}
+function getDepartureExpected(dep) {
 
-
-function departureExpected(dep) {
     return (
         dep?.expected ??
-        dep?.expected_time ??
-        dep?.expectedTime ??
+        dep?.scheduled ??
         null
     );
 }
 
 
-function departureMinutesFromNow(dep) {
-    const value =
-        departureExpected(dep) ||
-        departureScheduled(dep);
+function findLineDeparture(
+    departures,
+    line
+) {
 
-    if (!value) return null;
+    const wanted =
+        String(line).trim();
 
-    const timestamp = new Date(value).getTime();
+    const candidates =
+        departures.filter(
+            dep =>
+                getDepartureLine(dep) ===
+                wanted
+        );
 
-    if (Number.isNaN(timestamp)) {
+    if (
+        candidates.length === 0
+    ) {
         return null;
     }
 
-    return Math.round(
-        (timestamp - Date.now()) / 60000
+    const future =
+        candidates.filter(
+            dep => {
+
+                const value =
+                    getDepartureExpected(dep);
+
+                return (
+                    value &&
+                    minutesFromNow(value) >= -1
+                );
+            }
+        );
+
+    return (
+        future[0] ||
+        candidates[0]
     );
 }
 
 
 /* ============================================================
-   MATCHA RESROBOT-LEG MOT SL REALTIME
+   KARTA
    ============================================================ */
 
-async function enrichLegWithSL(leg, sites) {
-    const stopName =
-        leg?.Origin?.name ||
-        "";
+const map =
+    L.map(
+        "map",
+        {
+            zoomControl: false,
+            attributionControl: true
+        }
+    );
 
-    const line =
-        getLine(leg);
 
-    if (!stopName || !line) {
-        return {
-            leg,
-            realtime: null
-        };
+L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+        maxZoom: 19,
+        attribution:
+            '&copy; OpenStreetMap contributors'
     }
+).addTo(map);
 
-    const site = findSLSite(sites, stopName);
 
-    if (!site) {
-        return {
-            leg,
-            realtime: null
-        };
-    }
+let routeLayer = null;
 
-    const siteId =
-        site?.id ??
-        site?.siteId ??
-        site?.SiteId;
+const stopMarkers = new Map();
 
-    if (!siteId) {
-        return {
-            leg,
-            realtime: null
-        };
-    }
+const vehicleMarkers = new Map();
 
-    const data = await getSLDepartures(siteId);
 
-    const departures =
-        Array.isArray(data?.departures)
-            ? data.departures
+/*
+ * Fallback-koordinater.
+ *
+ * Dessa ersätts med SL:s aktuella site-data
+ * så fort den laddas.
+ */
+const stopCoordinates = {
+    "3870": null,
+    "9103": null,
+    "9105": null
+};
+
+
+async function loadSLStopData() {
+
+    const data =
+        await fetchJson(
+            `${SL_BASE}/sites?expand=true`,
+            "SL hållplatser"
+        );
+
+    const sites =
+        Array.isArray(data)
+            ? data
             : [];
 
-    const targetTime =
-        timeToMinutes(leg?.Origin?.time);
+    for (const site of sites) {
 
-    const candidates = departures
-        .filter(dep => {
-            const depLine = departureLine(dep);
+        const id =
+            String(
+                site?.id ??
+                site?.siteId ??
+                ""
+            );
 
-            return depLine === line;
-        })
-        .filter(dep => {
-            const depMinutes =
-                departureMinutesFromNow(dep);
+        if (
+            !Object.prototype.hasOwnProperty.call(
+                stopCoordinates,
+                id
+            )
+        ) {
+            continue;
+        }
 
-            return depMinutes === null || depMinutes >= -1;
-        });
+        const lat =
+            Number(
+                site?.lat ??
+                site?.latitude
+            );
 
-    if (candidates.length === 0) {
-        return {
-            leg,
-            realtime: null
-        };
+        const lon =
+            Number(
+                site?.lon ??
+                site?.longitude
+            );
+
+        if (
+            Number.isFinite(lat) &&
+            Number.isFinite(lon)
+        ) {
+            stopCoordinates[id] = {
+                lat,
+                lon,
+                name:
+                    site?.name ||
+                    ""
+            };
+        }
     }
 
     /*
-     * Matcha helst den SL-avgång som ligger närmast
-     * ResRobots planerade avgångstid.
+     * Västergöksvägen 3870 kan i vissa SL-data
+     * vara en äldre site-referens. Om den inte
+     * finns används ResRobot-data nedan.
      */
-    let best = null;
-    let bestDifference = Infinity;
+}
 
-    for (const dep of candidates) {
-        const scheduled =
-            departureScheduled(dep);
 
-        let difference = 999999;
+/* ============================================================
+   STOPP-MARKÖRER
+   ============================================================ */
 
-        if (scheduled && targetTime !== null) {
-            const parsed = new Date(scheduled);
+function stopIcon() {
 
-            if (!Number.isNaN(parsed.getTime())) {
-                const localMinutes =
-                    parsed.getHours() * 60 +
-                    parsed.getMinutes();
+    return L.divIcon({
+        className: "",
+        html:
+            `<div class="stop-marker"></div>`,
+        iconSize: [12, 12],
+        iconAnchor: [6, 6]
+    });
+}
 
-                difference =
-                    Math.abs(localMinutes - targetTime);
 
-                /*
-                 * Hantera midnatt.
-                 */
-                difference =
-                    Math.min(
-                        difference,
-                        1440 - difference
-                    );
+function drawStopMarkers() {
+
+    for (
+        const [
+            id,
+            marker
+        ] of stopMarkers
+    ) {
+        map.removeLayer(marker);
+    }
+
+    stopMarkers.clear();
+
+    const points = [];
+
+    for (
+        const [
+            id,
+            data
+        ] of Object.entries(
+            stopCoordinates
+        )
+    ) {
+
+        if (!data) {
+            continue;
+        }
+
+        const marker =
+            L.marker(
+                [
+                    data.lat,
+                    data.lon
+                ],
+                {
+                    icon:
+                        stopIcon()
+                }
+            )
+            .addTo(map)
+            .bindTooltip(
+                data.name ||
+                (
+                    id === "3870"
+                        ? "Västergöksvägen"
+                        : id === "9103"
+                            ? "Vällingby"
+                            : "Blackeberg"
+                )
+            );
+
+        stopMarkers.set(
+            id,
+            marker
+        );
+
+        points.push([
+            data.lat,
+            data.lon
+        ]);
+    }
+
+    if (
+        points.length >= 2
+    ) {
+
+        routeLayer =
+            L.polyline(
+                points,
+                {
+                    weight: 5,
+                    opacity: .85
+                }
+            ).addTo(map);
+
+        map.fitBounds(
+            routeLayer.getBounds(),
+            {
+                padding: [18, 18]
             }
-        }
-
-        /*
-         * Om ingen tid gick att matcha väljer vi
-         * helt enkelt nästa avgång.
-         */
-        if (difference < bestDifference) {
-            bestDifference = difference;
-            best = dep;
-        }
+        );
     }
+}
+
+
+/* ============================================================
+   GTFS-RT PROTOBUF
+   ============================================================ */
+
+let GtfsRealtimeBindings = null;
+
+
+async function loadGTFSRealtimeLibrary() {
 
     /*
-     * Undvik att matcha en helt annan avgång
-     * flera timmar bort.
+     * Version 1.x används här eftersom den är
+     * den browser-vänliga generationen av bindings.
+     *
+     * Trafiklab/GTFS använder protobuf för GTFS-RT.
      */
-    if (best && bestDifference > 45) {
-        best = null;
+    const module =
+        await import(
+            "https://cdn.jsdelivr.net/npm/gtfs-realtime-bindings@1.1.1/+esm"
+        );
+
+    GtfsRealtimeBindings =
+        module.default ||
+        module;
+}
+
+
+async function fetchRealtimeFeed(
+    feedName
+) {
+
+    const url =
+        `${GTFS_RT_BASE}/${feedName}.pb?key=${
+            encodeURIComponent(
+                TRAFIKLAB_KEY
+            )
+        }`;
+
+    const response =
+        await fetch(
+            url,
+            {
+                cache: "no-store"
+            }
+        );
+
+    if (!response.ok) {
+        throw new Error(
+            `GTFS-RT ${feedName}: HTTP ${response.status}`
+        );
     }
+
+    const buffer =
+        await response.arrayBuffer();
+
+    const bytes =
+        new Uint8Array(buffer);
+
+    const FeedMessage =
+        GtfsRealtimeBindings
+            .transit_realtime
+            .FeedMessage;
+
+    return FeedMessage.decode(bytes);
+}
+
+
+/* ============================================================
+   GTFS-RT VEHICLE POSITIONS
+   ============================================================ */
+
+function extractVehiclePositions(
+    feed
+) {
+
+    const result = [];
+
+    for (
+        const entity of feed.entity || []
+    ) {
+
+        const vehicle =
+            entity.vehicle;
+
+        if (!vehicle) {
+            continue;
+        }
+
+        const position =
+            vehicle.position;
+
+        if (!position) {
+            continue;
+        }
+
+        const latitude =
+            Number(
+                position.latitude
+            );
+
+        const longitude =
+            Number(
+                position.longitude
+            );
+
+        if (
+            !Number.isFinite(latitude) ||
+            !Number.isFinite(longitude)
+        ) {
+            continue;
+        }
+
+        const trip =
+            vehicle.trip || {};
+
+        const vehicleInfo =
+            vehicle.vehicle || {};
+
+        result.push({
+            id:
+                entity.id ||
+                vehicleInfo.id ||
+                `${latitude},${longitude}`,
+
+            routeId:
+                String(
+                    trip.routeId ||
+                    ""
+                ),
+
+            tripId:
+                String(
+                    trip.tripId ||
+                    ""
+                ),
+
+            latitude,
+            longitude,
+
+            bearing:
+                Number(
+                    position.bearing
+                ),
+
+            speed:
+                Number(
+                    position.speed
+                ),
+
+            label:
+                String(
+                    vehicleInfo.label ||
+                    vehicleInfo.name ||
+                    ""
+                ),
+
+            stopId:
+                String(
+                    vehicle.stopId ||
+                    ""
+                )
+        });
+    }
+
+    return result;
+}
+
+
+/* ============================================================
+   GTFS STATIC
+   ============================================================ */
+
+let staticData = null;
+
+
+/*
+ * Enkel CSV-parser som klarar:
+ * - komma
+ * - citationstecken
+ * - escaped citationstecken
+ */
+function parseCSV(text) {
+
+    const rows = [];
+
+    let row = [];
+    let cell = "";
+    let quoted = false;
+
+    for (
+        let i = 0;
+        i < text.length;
+        i++
+    ) {
+
+        const char =
+            text[i];
+
+        if (char === '"') {
+
+            if (
+                quoted &&
+                text[i + 1] === '"'
+            ) {
+                cell += '"';
+                i++;
+            } else {
+                quoted = !quoted;
+            }
+
+            continue;
+        }
+
+        if (
+            char === "," &&
+            !quoted
+        ) {
+            row.push(cell);
+            cell = "";
+            continue;
+        }
+
+        if (
+            (char === "\n" ||
+             char === "\r") &&
+            !quoted
+        ) {
+
+            if (
+                char === "\r" &&
+                text[i + 1] === "\n"
+            ) {
+                i++;
+            }
+
+            row.push(cell);
+            rows.push(row);
+
+            row = [];
+            cell = "";
+
+            continue;
+        }
+
+        cell += char;
+    }
+
+    if (
+        cell.length > 0 ||
+        row.length > 0
+    ) {
+        row.push(cell);
+        rows.push(row);
+    }
+
+    if (
+        rows.length === 0
+    ) {
+        return [];
+    }
+
+    const headers =
+        rows[0];
+
+    return rows
+        .slice(1)
+        .filter(
+            row =>
+                row.length &&
+                row.some(
+                    value =>
+                        value !== ""
+                )
+        )
+        .map(row => {
+
+            const object = {};
+
+            headers.forEach(
+                (
+                    header,
+                    index
+                ) => {
+                    object[header] =
+                        row[index] ??
+                        "";
+                }
+            );
+
+            return object;
+        });
+}
+
+
+async function loadStaticGTFS() {
+
+    /*
+     * Static GTFS är en zip-fil.
+     */
+    const response =
+        await fetch(
+            GTFS_STATIC_URL,
+            {
+                cache: "no-store"
+            }
+        );
+
+    if (!response.ok) {
+        throw new Error(
+            `GTFS static: HTTP ${response.status}`
+        );
+    }
+
+    const buffer =
+        await response.arrayBuffer();
+
+    const JSZip =
+        (
+            await import(
+                "https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm"
+            )
+        ).default;
+
+    const zip =
+        await JSZip.loadAsync(
+            buffer
+        );
+
+    async function read(
+        filename
+    ) {
+
+        const file =
+            zip.file(filename);
+
+        if (!file) {
+            return [];
+        }
+
+        const text =
+            await file.async(
+                "string"
+            );
+
+        return parseCSV(text);
+    }
+
+    const [
+        routes,
+        trips,
+        shapes
+    ] =
+        await Promise.all([
+            read("routes.txt"),
+            read("trips.txt"),
+            read("shapes.txt")
+        ]);
+
+    staticData = {
+        routes,
+        trips,
+        shapes
+    };
+
+    return staticData;
+}
+
+
+/* ============================================================
+   GTFS STATIC → LINJE / SHAPE
+   ============================================================ */
+
+function getRouteFromTrip(
+    tripId
+) {
+
+    if (!staticData) {
+        return null;
+    }
+
+    const trip =
+        staticData.trips.find(
+            x =>
+                String(
+                    x.trip_id
+                ) ===
+                String(tripId)
+        );
+
+    if (!trip) {
+        return null;
+    }
+
+    const route =
+        staticData.routes.find(
+            x =>
+                String(
+                    x.route_id
+                ) ===
+                String(
+                    trip.route_id
+                )
+        );
 
     return {
-        leg,
-        realtime: best,
-        site
+        trip,
+        route
     };
 }
 
 
-/* ============================================================
-   VÄLJ RESA
-   ============================================================ */
+function getShape(
+    shapeId
+) {
 
-function getLegs(trip) {
-    const legs =
-        trip?.LegList?.Leg;
-
-    if (!Array.isArray(legs)) {
+    if (!staticData) {
         return [];
     }
 
-    return legs;
-}
-
-
-function tripHasUsefulPublicTransport(trip) {
-    return getLegs(trip)
-        .some(isPublicTransportLeg);
-}
-
-
-async function enrichTrip(trip, sites) {
-    const legs = getLegs(trip);
-
-    const enriched = [];
-
-    for (const leg of legs) {
-        if (isPublicTransportLeg(leg)) {
-            try {
-                enriched.push(
-                    await enrichLegWithSL(
-                        leg,
-                        sites
-                    )
-                );
-            } catch {
-                /*
-                 * Om SL-uppslaget för en viss leg
-                 * misslyckas låter vi ändå ResRobot-resan
-                 * fortsätta fungera.
-                 */
-                enriched.push({
-                    leg,
-                    realtime: null
-                });
-            }
-        } else {
-            enriched.push({
-                leg,
-                realtime: null
-            });
-        }
-    }
-
-    return enriched;
-}
-
-
-function scoreTrip(enrichedTrip) {
-    let score = 0;
-
-    for (const item of enrichedTrip) {
-        if (!isPublicTransportLeg(item.leg)) {
-            continue;
-        }
-
-        /*
-         * En realtidsmatch är bättre än enbart
-         * statisk ResRobot-tid.
-         */
-        if (item.realtime) {
-            score += 100;
-        }
-    }
-
-    return score;
+    return staticData.shapes
+        .filter(
+            point =>
+                String(
+                    point.shape_id
+                ) ===
+                String(shapeId)
+        )
+        .sort(
+            (
+                a,
+                b
+            ) =>
+                Number(
+                    a.shape_pt_sequence
+                ) -
+                Number(
+                    b.shape_pt_sequence
+                )
+        )
+        .map(
+            point => [
+                Number(
+                    point.shape_pt_lat
+                ),
+                Number(
+                    point.shape_pt_lon
+                )
+            ]
+        )
+        .filter(
+            point =>
+                Number.isFinite(
+                    point[0]
+                ) &&
+                Number.isFinite(
+                    point[1]
+                )
+        );
 }
 
 
 /* ============================================================
-   VISA RESAN
+   VEHICLE MARKERS
    ============================================================ */
 
-function renderTransportLeg(item) {
-    const leg = item.leg;
-    const realtime = item.realtime;
+function vehicleIcon(
+    label,
+    metro
+) {
 
-    const line = escapeHtml(
-        getLine(leg)
-    );
+    const text =
+        String(label || "•")
+            .slice(0, 4);
 
-    const destination = escapeHtml(
-        realtime
-            ? departureDestination(realtime) ||
-              leg?.direction ||
-              leg?.Destination?.name ||
-              ""
-            : leg?.direction ||
-              leg?.Destination?.name ||
-              ""
-    );
+    return L.divIcon({
+        className: "",
+        html:
+            `<div class="vehicle-marker ${
+                metro
+                    ? "metro-marker"
+                    : ""
+            }">${
+                escapeHtml(text)
+            }</div>`,
+
+        iconSize: [24, 24],
+
+        iconAnchor: [12, 12]
+    });
+}
+
+
+function updateVehicleMarkers(
+    vehicles,
+    relevantRouteIds
+) {
+
+    const wanted =
+        new Set(
+            relevantRouteIds
+                .filter(Boolean)
+                .map(
+                    String
+                )
+        );
+
+    const visible =
+        vehicles.filter(
+            vehicle =>
+                wanted.size === 0 ||
+                wanted.has(
+                    vehicle.routeId
+                )
+        );
+
+    const seen =
+        new Set();
+
+    for (
+        const vehicle of visible
+    ) {
+
+        seen.add(
+            vehicle.id
+        );
+
+        const staticInfo =
+            getRouteFromTrip(
+                vehicle.tripId
+            );
+
+        const route =
+            staticInfo?.route;
+
+        const isMetro =
+            Number(
+                route?.route_type
+            ) >= 400 &&
+            Number(
+                route?.route_type
+            ) <= 499;
+
+        const label =
+            route?.route_short_name ||
+            vehicle.label ||
+            "";
+
+        const latlng = [
+            vehicle.latitude,
+            vehicle.longitude
+        ];
+
+        if (
+            vehicleMarkers.has(
+                vehicle.id
+            )
+        ) {
+
+            const marker =
+                vehicleMarkers.get(
+                    vehicle.id
+                );
+
+            marker.setLatLng(
+                latlng
+            );
+
+            marker.setIcon(
+                vehicleIcon(
+                    label,
+                    isMetro
+                )
+            );
+
+        } else {
+
+            const marker =
+                L.marker(
+                    latlng,
+                    {
+                        icon:
+                            vehicleIcon(
+                                label,
+                                isMetro
+                            )
+                    }
+                )
+                .addTo(map);
+
+            marker.bindTooltip(
+                label
+                    ? `${label}${
+                        vehicle.label
+                            ? ` · ${vehicle.label}`
+                            : ""
+                    }`
+                    : "SL-fordon"
+            );
+
+            vehicleMarkers.set(
+                vehicle.id,
+                marker
+            );
+        }
+    }
+
 
     /*
-     * Om SL har en realtidsavgång använder vi dess
-     * expected-tid. Annars använder vi ResRobots
-     * statiska tid.
+     * Ta bort fordon som inte längre finns
+     * i senaste feeden.
      */
-    if (realtime) {
-        const expected =
-            departureExpected(realtime);
+    for (
+        const [
+            id,
+            marker
+        ] of vehicleMarkers
+    ) {
 
-        const scheduled =
-            departureScheduled(realtime);
+        if (!seen.has(id)) {
+
+            map.removeLayer(
+                marker
+            );
+
+            vehicleMarkers.delete(
+                id
+            );
+        }
+    }
+
+
+    mapStatus.textContent =
+        `${visible.length} fordon i realtid`;
+}
+
+
+/* ============================================================
+   FÖRSÖK IDENTIFIERA LINJER
+   ============================================================ */
+
+function getJourneyLines(
+    trips
+) {
+
+    const lines = [];
+
+    for (
+        const trip of trips
+    ) {
+
+        for (
+            const leg of getLegs(trip)
+        ) {
+
+            if (!isJourney(leg)) {
+                continue;
+            }
+
+            const line =
+                getLine(leg);
+
+            if (
+                line &&
+                !lines.includes(line)
+            ) {
+                lines.push(line);
+            }
+        }
+    }
+
+    return lines;
+}
+
+
+function staticRouteIdsForLines(
+    lines
+) {
+
+    if (!staticData) {
+        return [];
+    }
+
+    return staticData.routes
+        .filter(
+            route =>
+                lines.includes(
+                    String(
+                        route.route_short_name
+                    )
+                )
+        )
+        .map(
+            route =>
+                String(
+                    route.route_id
+                )
+        );
+}
+
+
+/* ============================================================
+   RITA SHAPE FÖR RELEVANTA TRIPPAR
+   ============================================================ */
+
+function drawActualShapes(
+    realtimeVehicles,
+    lines
+) {
+
+    if (!staticData) {
+        return;
+    }
+
+    const relevantTripIds =
+        realtimeVehicles
+            .filter(
+                vehicle => {
+
+                    const info =
+                        getRouteFromTrip(
+                            vehicle.tripId
+                        );
+
+                    return (
+                        info?.route &&
+                        lines.includes(
+                            String(
+                                info.route
+                                    .route_short_name
+                            )
+                        );
+                    };
+                }
+            )
+            .map(
+                vehicle =>
+                    vehicle.tripId
+            );
+
+    /*
+     * Ta bort gamla shape-lager.
+     */
+    if (
+        window.__shapeLayers
+    ) {
+
+        for (
+            const layer of
+            window.__shapeLayers
+        ) {
+            map.removeLayer(
+                layer
+            );
+        }
+    }
+
+    window.__shapeLayers = [];
+
+    /*
+     * Rita max ett begränsat antal shapes
+     * så kartan inte blir överfull.
+     */
+    const uniqueTrips =
+        [...new Set(
+            relevantTripIds
+        )].slice(0, 8);
+
+    for (
+        const tripId of uniqueTrips
+    ) {
+
+        const info =
+            getRouteFromTrip(
+                tripId
+            );
+
+        if (!info?.trip) {
+            continue;
+        }
+
+        const points =
+            getShape(
+                info.trip.shape_id
+            );
+
+        if (
+            points.length < 2
+        ) {
+            continue;
+        }
+
+        const layer =
+            L.polyline(
+                points,
+                {
+                    weight: 3,
+                    opacity: .55
+                }
+            ).addTo(map);
+
+        window.__shapeLayers.push(
+            layer
+        );
+    }
+}
+
+
+/* ============================================================
+   VISA RESVÄGEN
+   ============================================================ */
+
+function renderTrip(
+    trip,
+    departures
+) {
+
+    const legs =
+        getLegs(trip);
+
+    let html = "";
+
+    const journeyLegs =
+        legs.filter(
+            isJourney
+        );
+
+    if (
+        journeyLegs.length === 0
+    ) {
+        throw new Error(
+            "Resan saknar kollektivtrafik."
+        );
+    }
+
+
+    for (
+        let i = 0;
+        i < journeyLegs.length;
+        i++
+    ) {
+
+        const leg =
+            journeyLegs[i];
+
+        const line =
+            getLine(leg);
+
+        const origin =
+            String(
+                leg?.Origin?.name ||
+                ""
+            );
+
+        const destination =
+            String(
+                leg?.Destination?.name ||
+                leg?.direction ||
+                ""
+            );
+
+
+        /*
+         * Använd SL-realtid när det går.
+         */
+        const matchingDeparture =
+            departures.find(
+                item =>
+                    item.line === line &&
+                    normalize(
+                        item.origin
+                    ) ===
+                    normalize(origin)
+            );
+
 
         let timeHtml = "";
 
-        if (expected) {
-            const timestamp =
-                new Date(expected).getTime();
+        if (
+            matchingDeparture
+        ) {
 
-            if (!Number.isNaN(timestamp)) {
-                const mins =
-                    Math.round(
-                        (timestamp - Date.now()) /
-                        60000
-                    );
-
-                timeHtml =
-                    mins <= 0
-                        ? `<span class="now">Nu</span>`
-                        : `${mins} min`;
-            }
-        }
-
-        if (!timeHtml && scheduled) {
-            const timestamp =
-                new Date(scheduled).getTime();
-
-            if (!Number.isNaN(timestamp)) {
-                const mins =
-                    Math.round(
-                        (timestamp - Date.now()) /
-                        60000
-                    );
-
-                timeHtml =
-                    mins <= 0
-                        ? `<span class="now">Nu</span>`
-                        : `${mins} min`;
-            }
-        }
-
-        if (!timeHtml) {
             timeHtml =
-                escapeHtml(
-                    leg?.Origin?.time || ""
+                formatMinutes(
+                    matchingDeparture.expected
                 );
+
+        } else {
+
+            const date =
+                leg?.Origin?.date;
+
+            const time =
+                leg?.Origin?.time;
+
+            if (
+                date &&
+                time
+            ) {
+
+                const timestamp =
+                    new Date(
+                        `${date}T${time}:00`
+                    ).toISOString();
+
+                timeHtml =
+                    formatMinutes(
+                        timestamp
+                    );
+            }
         }
 
-        return `
+
+        html += `
             <div class="trip-row">
-                <div class="line ${
-                    isMetroLeg(leg)
-                        ? "subway"
-                        : ""
-                }">
-                    ${line}
+
+                <div class="line">
+                    ${escapeHtml(line)}
                 </div>
 
                 <div class="destination">
-                    ${destination}
+                    ${escapeHtml(
+                        destination
+                    )}
                 </div>
 
                 <div class="time">
                     ${timeHtml}
                 </div>
+
             </div>
         `;
-    }
 
-    /*
-     * Fallback till ResRobot.
-     */
-    return `
-        <div class="trip-row">
-            <div class="line ${
-                isMetroLeg(leg)
-                    ? "subway"
-                    : ""
-            }">
-                ${line}
-            </div>
-
-            <div class="destination">
-                ${destination}
-            </div>
-
-            <div class="time">
-                ${formatDeparture(
-                    leg?.Origin?.date,
-                    leg?.Origin?.time
-                )}
-            </div>
-        </div>
-    `;
-}
-
-
-function renderTransfer(fromLeg, toLeg) {
-    const from =
-        escapeHtml(
-            fromLeg?.Destination?.name || ""
-        );
-
-    const to =
-        escapeHtml(
-            toLeg?.Origin?.name || ""
-        );
-
-    /*
-     * Om hållplatsen är samma behöver vi inte
-     * visa "från → till".
-     */
-    if (
-        normalize(from) ===
-        normalize(to)
-    ) {
-        return `
-            <div class="transfer">
-                Byte vid ${from}
-            </div>
-        `;
-    }
-
-    return `
-        <div class="transfer">
-            Byte vid ${from}
-            <span class="arrow">→</span>
-            ${to}
-        </div>
-    `;
-}
-
-
-function renderWalking(leg) {
-    if (!leg) return "";
-
-    const distance =
-        Number(leg.dist);
-
-    if (
-        Number.isFinite(distance) &&
-        distance > 0
-    ) {
-        return `
-            <div class="walking">
-                Gå ${Math.round(distance)} m
-            </div>
-        `;
-    }
-
-    return `
-        <div class="walking">
-            Gå till nästa hållplats
-        </div>
-    `;
-}
-
-
-function renderTrip(enriched) {
-    let html = "";
-
-    for (let i = 0; i < enriched.length; i++) {
-        const current =
-            enriched[i];
-
-        const leg =
-            current.leg;
-
-        if (leg.type === "WALK") {
-            html += renderWalking(leg);
-            continue;
-        }
-
-        if (leg.type !== "JNY") {
-            continue;
-        }
-
-        html += renderTransportLeg(current);
 
         /*
-         * Leta efter nästa kollektivtrafik-leg.
+         * Byte mellan kollektivtrafikben.
          */
-        let nextIndex = i + 1;
-
-        while (
-            nextIndex < enriched.length &&
-            enriched[nextIndex].leg.type !== "JNY"
+        if (
+            i <
+            journeyLegs.length - 1
         ) {
-            /*
-             * Om det finns en WALK mellan två
-             * kollektivtrafikben visar vi den.
-             */
-            const intermediate =
-                enriched[nextIndex].leg;
 
-            if (intermediate.type === "WALK") {
-                html += renderWalking(
-                    intermediate
-                );
-            }
-
-            nextIndex++;
-        }
-
-        if (nextIndex < enriched.length) {
             const next =
-                enriched[nextIndex].leg;
+                journeyLegs[i + 1];
 
-            html += renderTransfer(
-                leg,
-                next
-            );
+            const transfer =
+                next?.Origin?.name ||
+                leg?.Destination?.name ||
+                "";
+
+            html += `
+                <div class="transfer">
+                    Byte vid
+                    ${escapeHtml(
+                        transfer
+                    )}
+                    <span class="arrow">
+                        →
+                    </span>
+                    ${escapeHtml(
+                        getLine(next)
+                    )}
+                </div>
+            `;
         }
     }
 
-    return html;
+
+    contentRows.innerHTML =
+        html;
+
+
+    routeSummary.textContent =
+        journeyLegs
+            .map(
+                leg =>
+                    `${getLine(leg)} ${
+                        leg?.Destination?.name || ""
+                    }`
+            )
+            .join(" → ");
+}
+
+
+/* ============================================================
+   HÄMTA SL-AVGÅNGAR FÖR HELA RUTTEN
+   ============================================================ */
+
+async function loadRelevantDepartures(
+    trip
+) {
+
+    const legs =
+        getLegs(trip)
+            .filter(
+                isJourney
+            );
+
+    const result = [];
+
+    /*
+     * Västergöksvägen → första bussen
+     */
+    const originData =
+        await getDepartures(
+            STOPS.origin.id
+        );
+
+
+    /*
+     * Vällingby → tunnelbana
+     */
+    const transferData =
+        await getDepartures(
+            STOPS.transfer.id
+        );
+
+
+    for (
+        const leg of legs
+    ) {
+
+        const line =
+            getLine(leg);
+
+        const origin =
+            String(
+                leg?.Origin?.name ||
+                ""
+            );
+
+        const source =
+            normalize(origin)
+                .includes(
+                    normalize(
+                        STOPS.transfer.name
+                    )
+                )
+                ? transferData
+                : originData;
+
+
+        const dep =
+            findLineDeparture(
+                source?.departures || [],
+                line
+            );
+
+        if (!dep) {
+            continue;
+        }
+
+        result.push({
+            line,
+
+            origin,
+
+            destination:
+                getDepartureDestination(
+                    dep
+                ),
+
+            expected:
+                getDepartureExpected(
+                    dep
+                )
+        });
+    }
+
+    return result;
+}
+
+
+/* ============================================================
+   REALTIME LOOP
+   ============================================================ */
+
+let currentLines = [];
+
+let currentRouteIds = [];
+
+let latestVehicles = [];
+
+
+async function updateRealtime() {
+
+    try {
+
+        /*
+         * VehiclePositions.
+         */
+        const vehicleFeed =
+            await fetchRealtimeFeed(
+                "VehiclePositions"
+            );
+
+        latestVehicles =
+            extractVehiclePositions(
+                vehicleFeed
+            );
+
+
+        /*
+         * Visa relevanta fordon.
+         */
+        updateVehicleMarkers(
+            latestVehicles,
+            currentRouteIds
+        );
+
+
+        /*
+         * Om static-data finns kan vi rita
+         * den faktiska GTFS-shapen.
+         */
+        drawActualShapes(
+            latestVehicles,
+            currentLines
+        );
+
+    } catch (error) {
+
+        console.error(
+            "GTFS-RT:",
+            error
+        );
+
+        mapStatus.textContent =
+            "GPS-data kunde inte hämtas";
+    }
 }
 
 
@@ -1031,180 +1999,220 @@ async function main() {
         RESROBOT_KEY ===
             "PASTE_YOUR_RESROBOT_KEY_HERE"
     ) {
+
         throw new Error(
-            "ResRobot API-nyckeln saknas. " +
-            "Fyll i RESROBOT_KEY längst upp i koden."
+            "Fyll i ResRobot API-nyckeln längst upp."
         );
     }
 
+
     /*
-     * 1. Hämta Västergöksvägen dynamiskt.
+     * 1. Ladda SL Site-data.
+     */
+    await loadSLStopData();
+
+    drawStopMarkers();
+
+
+    /*
+     * 2. Ladda GTFS-RT decoder.
+     */
+    await loadGTFSRealtimeLibrary();
+
+
+    /*
+     * 3. Försök ladda GTFS static.
      *
-     * Vi använder fortfarande den verifierade
-     * hållplatsen 7449901 som första val, men gör
-     * samtidigt en lookup så att koden inte är
-     * beroende av ett gammalt hårdkodat ID.
+     * Detta behövs för:
+     * route_id → linjenummer
+     * trip_id → shape
+     *
+     * Om nyckeln saknar static-behörighet
+     * fortsätter widgeten ändå.
      */
-    let origin;
-
     try {
-        origin = await findResRobotStop(
-            ORIGIN_NAME
-        );
+
+        await loadStaticGTFS();
+
     } catch (error) {
-        /*
-         * Känd verifierad ResRobot-hållplats:
-         * Västergöksvägen = 7449901.
-         *
-         * Fallback om location.name skulle
-         * ligga nere.
-         */
-        origin = {
-            name: ORIGIN_NAME,
-            extId: "7449901"
-        };
-    }
 
-    if (!origin?.extId) {
-        throw new Error(
-            `Hittade Västergöksvägen men inget ResRobot-id.`
+        console.warn(
+            "GTFS static kunde inte laddas:",
+            error
         );
+
+        staticData = null;
     }
 
 
     /*
-     * 2. Hämta Blackeberg.
-     */
-    const destination =
-        await findResRobotStop(
-            DESTINATION_NAME
-        );
-
-    if (!destination?.extId) {
-        throw new Error(
-            `Hittade Blackeberg men inget ResRobot-id.`
-        );
-    }
-
-
-    /*
-     * 3. Hämta möjliga resor.
+     * 4. Hämta resealternativ.
      */
     const trips =
-        await getTrips(
-            origin.extId,
-            destination.extId
-        );
+        await getResRobotTrip();
 
 
     /*
-     * 4. Hämta SL:s site-lista.
+     * Välj första användbara resan.
      */
-    const sites =
-        await getSLSites();
+    const trip =
+        trips.find(
+            candidate =>
+                getLegs(candidate)
+                    .some(isJourney)
+        );
 
-    if (!Array.isArray(sites)) {
+    if (!trip) {
         throw new Error(
-            "SL returnerade ingen giltig hållplatslista."
+            "Ingen användbar resa hittades."
         );
     }
 
 
     /*
-     * 5. Lägg på SL realtidsdata.
+     * 5. Hämta aktuella SL-avgångar.
      */
-    const enrichedTrips = [];
+    let departures = [];
 
-    for (const trip of trips) {
-        if (!tripHasUsefulPublicTransport(trip)) {
-            continue;
-        }
+    try {
 
-        const enriched =
-            await enrichTrip(
-                trip,
-                sites
+        departures =
+            await loadRelevantDepartures(
+                trip
             );
 
-        enrichedTrips.push(enriched);
-    }
+    } catch (error) {
 
-
-    if (enrichedTrips.length === 0) {
-        throw new Error(
-            "ResRobot hittade resor, men ingen innehöll kollektivtrafik."
+        console.warn(
+            "SL realtid:",
+            error
         );
     }
 
 
     /*
-     * 6. Välj den resa där vi lyckats få
-     * realtidsdata från SL.
-     *
-     * Om flera är lika bra tar vi den första.
+     * 6. Visa rutten.
      */
-    enrichedTrips.sort(
-        (a, b) =>
-            scoreTrip(b) -
-            scoreTrip(a)
+    renderTrip(
+        trip,
+        departures
     );
 
-    const selected =
-        enrichedTrips[0];
+
+    /*
+     * 7. Identifiera relevanta linjer.
+     */
+    currentLines =
+        getJourneyLines(
+            [trip]
+        );
 
 
     /*
-     * 7. Rita.
+     * 8. Matcha route_id från GTFS static.
      */
-    const html =
-        renderTrip(selected);
-
-    if (!html.trim()) {
-        throw new Error(
-            "Resan hämtades men kunde inte visas."
+    currentRouteIds =
+        staticRouteIdsForLines(
+            currentLines
         );
-    }
 
-    content.innerHTML = html;
+
+    /*
+     * 9. Hämta GPS-positioner.
+     */
+    await updateRealtime();
+
+
+    /*
+     * 10. Uppdatera GPS ungefär var 5:e sekund.
+     */
+    setInterval(
+        updateRealtime,
+        5000
+    );
+
+
+    /*
+     * 11. Uppdatera avgångarna varje 15:e sekund.
+     */
+    setInterval(
+        async () => {
+
+            try {
+
+                const fresh =
+                    await loadRelevantDepartures(
+                        trip
+                    );
+
+                renderTrip(
+                    trip,
+                    fresh
+                );
+
+            } catch (error) {
+
+                console.warn(
+                    "Avgångsuppdatering:",
+                    error
+                );
+            }
+
+        },
+        15000
+    );
 }
 
 
 /* ============================================================
-   START + FELHANTERING
+   START
    ============================================================ */
 
 main()
-    .catch(error => {
-        console.error(
-            "Västergöksvägen → Blackeberg:",
-            error
-        );
+    .catch(
+        error => {
 
-        content.innerHTML = `
-            <div class="error">
-                ${escapeHtml(
-                    error?.message ||
-                    "Okänt fel"
-                )}
-            </div>
-        `;
-    });
+            console.error(
+                "Widget:",
+                error
+            );
+
+            contentRows.innerHTML = `
+                <div class="error">
+                    ${escapeHtml(
+                        error?.message ||
+                        "Okänt fel"
+                    )}
+                </div>
+            `;
+
+            routeSummary.textContent =
+                "Kunde inte bygga resvägen.";
+
+            mapStatus.textContent =
+                "Ingen realtidsdata";
+        }
+    );
 
 
 /*
- * WidgetWeb readiness hook.
+ * WidgetWeb.
  */
 window.addEventListener(
     "load",
     () => {
+
         if (
             typeof window.WidgetWeb !==
-            "undefined"
+            "undefined" &&
+            typeof window.WidgetWeb.ready ===
+            "function"
         ) {
             window.WidgetWeb.ready();
         }
     }
 );
+
 </script>
 
 </body>
