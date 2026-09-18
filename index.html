@@ -3,227 +3,157 @@
 
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Västergöksvägen → Blackeberg</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Reseplanerare</title>
 <style>
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
 }
 
 :root {
-    --bg-main: #0b0f17;
-    --surface: #141b26;
-    --surface-card: #1b2331;
-    --surface-hover: #222d3f;
-    --text-main: #f0f6fc;
-    --text-muted: #8b949e;
-    --border-color: #2d3748;
-    --accent-blue: #3b82f6;
-    --sl-cyan: #0089cf;
-    --sl-blue: #004d9b;
-    --sl-green: #008751;
-    --sl-bus: #1d2633;
+    --bg-page: #10141b;
+    --card-bg: #1a1f28;
+    --card-hover: #222833;
+    --text-white: #f5f6f8;
+    --text-subtle: #848c97;
+    --metro-green: #30cb6e;
+    --bus-line: #2b303c;
+    --accent-blue: #388bfd;
 }
 
 html, body {
-    margin: 0;
-    min-height: 100%;
-    background: var(--bg-main);
-    color: var(--text-main);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-
-.app {
-    width: 100%;
-    max-width: 680px;
-    margin: auto;
+    background-color: var(--bg-page);
+    color: var(--text-white);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     min-height: 100vh;
-    padding-bottom: 50px;
 }
 
-/* APP HEADER */
-.sl-header {
-    position: sticky;
-    top: 0;
-    z-index: 30;
-    background: rgba(11, 15, 23, 0.88);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    padding: 20px;
-    border-bottom: 1px solid var(--border-color);
+.screen-wrapper {
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 18px 16px 50px 16px;
 }
 
-.sl-header-inner {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+/* ==========================================================================
+   COMMON ICONS (PURE INLINE SVG)
+   ========================================================================== */
+.icon {
+    display: inline-block;
+    vertical-align: middle;
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
 }
 
-.route-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 21px;
-    font-weight: 800;
-    letter-spacing: -0.3px;
-}
-
-.route-title .arrow {
-    color: var(--accent-blue);
-}
-
-.route-subtitle {
-    font-size: 13px;
-    color: var(--text-muted);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-}
-
-/* CONTAINER */
-.container {
-    padding: 16px;
+/* ==========================================================================
+   LIST SCREEN (DEFAULT VIEW)
+   ========================================================================== */
+.list-container {
     display: flex;
     flex-direction: column;
     gap: 14px;
 }
 
-/* JOURNEY CARD (SL STYLE) */
-.journey-item {
-    background: var(--surface-card);
-    border: 1px solid var(--border-color);
-    border-radius: 18px;
-    padding: 18px;
+.journey-overview-card {
+    background: var(--card-bg);
+    border-radius: 24px;
+    padding: 20px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    transition: background 0.15s ease, transform 0.1s ease;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.25);
 }
 
-.journey-item:hover {
-    background: var(--surface-hover);
-    border-color: var(--text-muted);
-    transform: translateY(-2px);
+.journey-overview-card:hover {
+    background: var(--card-hover);
 }
 
-.journey-top-row {
+.journey-overview-card:active {
+    transform: scale(0.985);
+}
+
+.overview-top {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 14px;
-}
-
-.times-group {
-    display: flex;
     align-items: baseline;
-    gap: 8px;
-}
-
-.main-time {
-    font-size: 24px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-}
-
-.time-sep {
-    color: var(--text-muted);
-    font-weight: 600;
-}
-
-.duration-pill {
-    background: rgba(59, 130, 246, 0.15);
-    color: #60a5fa;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.stations-path-label {
-    font-size: 14px;
-    color: var(--text-muted);
     margin-bottom: 14px;
+}
+
+.overview-times {
+    font-size: 26px;
+    font-weight: 750;
+    letter-spacing: -0.6px;
+}
+
+.overview-times span {
+    color: var(--text-subtle);
+    font-weight: 400;
+    margin: 0 4px;
+}
+
+.overview-duration {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-subtle);
+}
+
+.overview-stations {
+    font-size: 14px;
+    color: var(--text-subtle);
+    margin-bottom: 16px;
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
-.stations-path-label strong {
-    color: var(--text-main);
+.overview-stations strong {
+    color: var(--text-white);
 }
 
-/* BADGES ROW */
-.badges-row {
+.overview-badges {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
-.transport-badge {
+.badge-item {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 12px;
+    padding: 4px 10px;
     border-radius: 8px;
     font-size: 13px;
     font-weight: 700;
-    background: var(--sl-bus);
-    border: 1px solid var(--border-color);
+    background: #252b36;
+    color: var(--text-white);
 }
 
-.transport-badge.metro {
-    background: rgba(0, 135, 81, 0.2);
-    border-color: rgba(0, 135, 81, 0.5);
-    color: #4ade80;
+.badge-item.metro {
+    background: rgba(48, 203, 110, 0.18);
+    color: var(--metro-green);
 }
 
-.transport-badge.walk {
-    background: #212c3d;
-    color: var(--text-muted);
+.badge-item.walk {
+    background: #232832;
+    color: var(--text-subtle);
     font-weight: 500;
 }
 
-.badge-arrow {
-    color: var(--text-muted);
+.badge-chevron {
+    color: var(--text-subtle);
     font-size: 12px;
 }
 
-/* LOADING & ERROR STATES */
-.loading-box {
-    padding: 60px 20px;
-    text-align: center;
-    color: var(--text-muted);
-    font-weight: 500;
-}
-
-.spinner {
-    width: 34px;
-    height: 34px;
-    margin: 0 auto 16px;
-    border: 3px solid var(--border-color);
-    border-top-color: var(--accent-blue);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.error-box {
-    margin: 20px 16px;
-    padding: 18px;
-    border-radius: 14px;
-    background: rgba(239, 68, 68, 0.12);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #f87171;
-    font-size: 14px;
-}
-
-/* DETAIL VIEW */
+/* ==========================================================================
+   DETAIL VIEW (EXACT MATCH OF SCREENSHOT)
+   ========================================================================== */
 .detail-view {
     display: none;
-    padding: 16px;
 }
 
 .detail-view.visible {
@@ -234,215 +164,363 @@ html, body {
     display: none;
 }
 
-.back-action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border: 1px solid var(--border-color);
-    background: var(--surface-card);
-    color: var(--accent-blue);
-    font-size: 14px;
-    font-weight: 600;
-    padding: 9px 16px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    cursor: pointer;
-    transition: background 0.15s;
-}
-
-.back-action-btn:hover {
-    background: var(--surface-hover);
-}
-
-.detail-top-card {
-    background: var(--surface-card);
-    border: 1px solid var(--border-color);
-    border-radius: 18px;
-    padding: 20px;
-    margin-bottom: 24px;
-}
-
-.detail-main-title {
-    font-size: 20px;
-    font-weight: 800;
-    margin-bottom: 4px;
-}
-
-.detail-main-sub {
-    font-size: 13px;
-    color: var(--text-muted);
-}
-
-/* DETAILED TIMELINE (SL ROUTE PLANNER STYLE) */
-.sl-timeline {
+.nav-bar {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
+    align-items: center;
+    position: relative;
+    padding: 8px 0 24px 0;
 }
 
-.sl-leg-card {
-    background: var(--surface-card);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 18px;
+.back-circle-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-white);
+    cursor: pointer;
+    z-index: 2;
+}
+
+.back-circle-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.nav-center-title {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    left: 0;
+    top: 14px;
+}
+
+.nav-page-title {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+}
+
+.nav-page-sub {
+    font-size: 12px;
+    color: var(--text-subtle);
+    margin-top: 1px;
+}
+
+/* TRANSFER DIVIDER ROW */
+.transfer-strip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0 10px 18px;
+    color: var(--text-subtle);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.transfer-strip svg {
+    width: 13px;
+    height: 13px;
+    fill: currentColor;
+}
+
+/* TRANSIT CARD CONTAINER */
+.card-block {
+    background-color: var(--card-bg);
+    border-radius: 28px;
+    padding: 22px 20px;
     position: relative;
 }
 
-.sl-leg-card.metro-leg {
-    border-left: 4px solid var(--sl-green);
-}
-
-.sl-leg-card.bus-leg {
-    border-left: 4px solid var(--sl-cyan);
-}
-
-.sl-leg-card.walk-leg {
-    border-left: 4px solid var(--text-muted);
-}
-
-.leg-header-row {
+/* CARD HEADER (TOP RIGHT PILL) */
+.card-corner-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-.leg-title-text {
-    font-size: 16px;
-    font-weight: 700;
+.card-corner-badge.bus {
+    background: #000000;
 }
 
-.leg-badge {
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 700;
-    background: var(--bg-main);
-    border: 1px solid var(--border-color);
+.card-corner-badge.metro {
+    background: #20a05a;
 }
 
-.leg-stops-list {
+.corner-icon-box {
+    width: 32px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #257fa8;
+}
+
+.card-corner-badge.metro .corner-icon-box {
+    background: #187a44;
+}
+
+.corner-icon-box svg {
+    width: 16px;
+    height: 16px;
+    fill: #ffffff;
+}
+
+.corner-number-box {
+    padding: 0 10px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    color: #ffffff;
+    line-height: 28px;
+}
+
+/* THE TIMELINE THREE-COLUMN STRUCTURE */
+.timeline-row {
+    display: grid;
+    grid-template-columns: 50px 16px 1fr;
+    column-gap: 12px;
+}
+
+/* COL 1: TIMES & DURATION */
+.time-column {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
-    padding-left: 10px;
-    border-left: 2px solid var(--border-color);
-}
-
-.stop-row {
-    display: flex;
     justify-content: space-between;
-    align-items: center;
-    font-size: 13px;
+    text-align: left;
 }
 
-.stop-time {
+.dep-time, .arr-time {
+    font-size: 16px;
     font-weight: 700;
-    color: var(--text-muted);
-    min-width: 45px;
+    color: var(--text-white);
+    line-height: 1.1;
 }
 
-.stop-name {
-    flex: 1;
-    color: var(--text-main);
-    padding-left: 10px;
-}
-
-.intermediate-toggle {
-    margin-top: 10px;
-    background: none;
-    border: none;
-    color: var(--accent-blue);
+.travel-duration {
     font-size: 13px;
+    color: var(--text-subtle);
+    font-weight: 500;
+}
+
+/* COL 2: VERTICAL SPINE & DOTS */
+.spine-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding: 4px 0;
+}
+
+.spine-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+.spine-bar {
+    width: 4px;
+    flex-grow: 1;
+    border-radius: 2px;
+    margin: 2px 0;
+}
+
+.spine-bar.bus {
+    background-color: var(--bus-line);
+}
+
+.spine-bar.metro {
+    background-color: var(--metro-green);
+}
+
+.spine-bar.dotted-walk {
+    width: 4px;
+    background: transparent;
+    border-left: 3px dotted #ffffff;
+    margin: 3px 0;
+}
+
+/* COL 3: STATION NAMES, CHIPS, LINE INFO, ACCORDION */
+.info-column {
+    display: flex;
+    flex-direction: column;
+    padding-right: 65px; /* space for badge */
+}
+
+.station-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-white);
+    line-height: 1.2;
+}
+
+/* CHIPS (TRACK, CROWDING) */
+.chips-cluster {
+    display: flex;
+    gap: 6px;
+    margin: 10px 0 10px 0;
+    flex-wrap: wrap;
+}
+
+.chip {
+    background: #11151c;
+    color: var(--text-white);
+    font-size: 12px;
     font-weight: 600;
-    cursor: pointer;
-    padding: 0;
+    padding: 5px 9px;
+    border-radius: 7px;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
 }
 
-.intermediate-stops-container {
+.chip svg {
+    width: 12px;
+    height: 12px;
+    fill: var(--text-subtle);
+}
+
+.route-desc-text {
+    font-size: 13px;
+    color: var(--text-white);
+    margin-bottom: 12px;
+    line-height: 1.35;
+}
+
+.stops-accordion-trigger {
+    background: none;
+    border: none;
+    color: #499bed;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.stops-accordion-trigger svg {
+    width: 11px;
+    height: 11px;
+    fill: currentColor;
+    transition: transform 0.2s;
+}
+
+.stops-sublist {
     display: none;
     flex-direction: column;
     gap: 8px;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed var(--border-color);
+    margin-bottom: 14px;
+    padding-left: 8px;
+    border-left: 2px solid #2b303c;
 }
 
-.intermediate-stops-container.open {
+.stops-sublist.open {
     display: flex;
 }
 
-.transfer-banner {
-    padding: 10px 14px;
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    color: #fbbf24;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    margin: 8px 0;
+.sub-stop-entry {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-subtle);
+}
+
+/* WALKING CARD SPECIFIC */
+.card-block.walk-card {
+    padding: 18px 20px;
+}
+
+.walk-badge-box {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #257fa8;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
 }
 
-.footer-info {
-    margin-top: 30px;
+.walk-badge-box svg {
+    width: 16px;
+    height: 16px;
+    fill: #ffffff;
+}
+
+/* SPINNER & ERROR */
+.state-box {
+    padding: 80px 20px;
     text-align: center;
-    font-size: 12px;
-    color: var(--text-muted);
-    border-top: 1px solid var(--border-color);
-    padding-top: 20px;
+    color: var(--text-subtle);
+}
+
+.loader-spinner {
+    width: 28px;
+    height: 28px;
+    margin: 0 auto 16px;
+    border: 3px solid #282e3a;
+    border-top-color: #499bed;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.error-msg {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #f87171;
+    padding: 16px;
+    border-radius: 16px;
+    font-size: 13px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="app">
+<div class="screen-wrapper">
 
-    <!-- HEADER -->
-    <header class="sl-header">
-        <div class="sl-header-inner">
-            <div class="route-title">
-                <span>Västergöksvägen</span>
-                <span class="arrow">→</span>
-                <span>Blackeberg</span>
-            </div>
-            <div class="route-subtitle">SL Reseplanerare · Liveuppdaterad</div>
-        </div>
-    </header>
-
-    <!-- LIST VIEW -->
+    <!-- ================= LIST VIEW ================= -->
     <main id="listView" class="list-view">
-        <div id="journeysContainer" class="container">
-            <div class="loading-box">
-                <div class="spinner"></div>
-                Hämtar SL-resor från ResRobot...
+        <div id="journeysList" class="list-container">
+            <div class="state-box">
+                <div class="loader-spinner"></div>
+                <div>Söker avgångar...</div>
             </div>
         </div>
     </main>
 
-    <!-- DETAIL VIEW -->
+    <!-- ================= DETAIL VIEW ================= -->
     <main id="detailView" class="detail-view">
-        <button id="backButton" class="back-action-btn">
-            ← Tillbaka till reselista
-        </button>
+        <nav class="nav-bar">
+            <button id="backButton" class="back-circle-btn" aria-label="Tillbaka">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            </button>
+            <div class="nav-center-title">
+                <div class="nav-page-title">Resedetaljer</div>
+                <div id="navOriginName" class="nav-page-sub">Västergöksvägen</div>
+            </div>
+        </nav>
 
-        <div class="detail-top-card">
-            <div id="detailMainTitle" class="detail-main-title">Resedetaljer</div>
-            <div id="detailMainSub" class="detail-main-sub">Detaljerad översikt av färdväg, byten och hållplatser</div>
-        </div>
-
-        <div id="slTimelineContainer" class="sl-timeline"></div>
-
-        <div class="footer-info">
-            Resinformation levereras via ResRobot API. Trafikförändringar kan förekomma.
-        </div>
+        <div id="detailTimelineFlow"></div>
     </main>
 
 </div>
@@ -451,9 +529,10 @@ html, body {
 const WORKER = "https://sl-transit-proxy.haxxerlikeshaxx.workers.dev";
 let cachedJourneys = [];
 
+/* HELPERS */
 function cleanStationName(name) {
     if (!name) return "";
-    return name.replace(/\s*\(Stockholm kn\)/gi, "").trim();
+    return name.replace(/\s*\(Stockholm kn\)/gi, "").replace(/\s*\(Vinstavägen\)/gi, "").trim();
 }
 
 function cleanTime(timeStr) {
@@ -498,223 +577,267 @@ function checkIfMetro(leg) {
     return cat.includes("metro") || cat.includes("tunnel") || cat.includes("ult");
 }
 
-/* RENDER LIST OF JOURNEYS */
-function renderJourneyList() {
-    const container = document.getElementById("journeysContainer");
+/* FILTER BUGS: REMOVE TRIVIAL / DUPLICATE START WALKS */
+function sanitizeLegs(legs) {
+    return legs.filter((leg, idx) => {
+        if (leg.type === "WALK") {
+            const startName = cleanStationName(leg.Origin?.name);
+            const endName = cleanStationName(leg.Destination?.name);
+            // Purge the 3 min Västergöksvägen -> Västergöksvägen (Vinstavägen) bug
+            if (startName === endName || (idx === 0 && legs.length > 1 && legs[1].type === "JNY")) {
+                return false;
+            }
+        }
+        return leg.type === "JNY" || leg.type === "WALK";
+    });
+}
+
+/* ==========================================================================
+   RENDER LIST
+   ========================================================================== */
+function renderList() {
+    const container = document.getElementById("journeysList");
     container.innerHTML = "";
 
     if (!cachedJourneys.length) {
-        container.innerHTML = `<div class="error-box">Inga resor hittades för denna rutt just nu.</div>`;
+        container.innerHTML = `<div class="error-msg">Inga resor hittades just nu.</div>`;
         return;
     }
 
     cachedJourneys.forEach((trip) => {
-        const legs = trip.LegList?.Leg || [];
-        const firstLeg = legs[0];
-        const lastLeg = legs[legs.length - 1];
+        const legs = sanitizeLegs(trip.LegList?.Leg || []);
+        if (!legs.length) return;
 
-        if (!firstLeg || !lastLeg) return;
-
-        const origin = firstLeg.Origin;
-        const destination = lastLeg.Destination;
+        const origin = legs[0].Origin;
+        const destination = legs[legs.length - 1].Destination;
 
         const startT = cleanTime(origin.time);
         const endT = cleanTime(destination.time);
         const totalDuration = calculateDuration(`${origin.date}T${origin.time}`, `${destination.date}T${destination.time}`);
 
         let badgesHTML = "";
-        const activeLegs = legs.filter(l => l.type === "JNY" || l.type === "WALK");
-
-        activeLegs.forEach((leg, i) => {
-            if (i > 0) badgesHTML += `<span class="badge-arrow">›</span>`;
+        legs.forEach((leg, idx) => {
+            if (idx > 0) badgesHTML += `<span class="badge-chevron">›</span>`;
 
             if (leg.type === "WALK") {
-                const walkSeconds = parseInt(leg.duration?.replace(/\D/g,'')) || 180;
-                const walkMin = Math.max(1, Math.round(walkSeconds / 60));
-                badgesHTML += `<span class="transport-badge walk">Gå (${walkMin} min)</span>`;
+                const walkMin = Math.round((parseInt(leg.duration?.replace(/\D/g,'')) || 180) / 60);
+                badgesHTML += `<span class="badge-item walk">Gå ${walkMin}m</span>`;
             } else {
                 const line = getLineNumber(leg);
                 const isT = checkIfMetro(leg);
-                const typeLabel = isT ? "T-bana" : "Buss";
-                badgesHTML += `<span class="transport-badge ${isT ? 'metro' : ''}">${typeLabel} ${escapeHTML(line)}</span>`;
+                badgesHTML += `
+                    <span class="badge-item ${isT ? 'metro' : ''}">
+                        ${isT ? 'T' : 'Buss'} ${escapeHTML(line)}
+                    </span>
+                `;
             }
         });
 
         const card = document.createElement("div");
-        card.className = "journey-item";
+        card.className = "journey-overview-card";
         card.innerHTML = `
-            <div class="journey-top-row">
-                <div class="times-group">
-                    <span class="main-time">${startT}</span>
-                    <span class="time-sep">→</span>
-                    <span class="main-time">${endT}</span>
+            <div class="overview-top">
+                <div class="overview-times">
+                    ${startT} <span>→</span> ${endT}
                 </div>
-                <div class="duration-pill">
+                <div class="overview-duration">
                     ${totalDuration !== null ? totalDuration + ' min' : ''}
                 </div>
             </div>
-
-            <div class="stations-path-label">
+            <div class="overview-stations">
                 <span>Från: <strong>${escapeHTML(cleanStationName(origin.name))}</strong></span>
             </div>
-
-            <div class="badges-row">
+            <div class="overview-badges">
                 ${badgesHTML}
             </div>
         `;
 
-        card.addEventListener("click", () => renderDetailView(trip));
+        card.addEventListener("click", () => renderDetail(trip));
         container.appendChild(card);
     });
 }
 
-/* RENDER DETAILED VIEW (SL STYLE) */
-function renderDetailView(trip) {
+/* ==========================================================================
+   RENDER DETAIL (SCREENSHOT REPLICA)
+   ========================================================================== */
+function renderDetail(trip) {
     const listView = document.getElementById("listView");
     const detailView = document.getElementById("detailView");
-    const mainTitle = document.getElementById("detailMainTitle");
-    const mainSub = document.getElementById("detailMainSub");
-    const timelineContainer = document.getElementById("slTimelineContainer");
+    const timelineFlow = document.getElementById("detailTimelineFlow");
+    const navOriginName = document.getElementById("navOriginName");
 
-    const legs = trip.LegList?.Leg || [];
-    const origin = legs[0]?.Origin;
-    const destination = legs[legs.length - 1]?.Destination;
+    const rawLegs = trip.LegList?.Leg || [];
+    const legs = sanitizeLegs(rawLegs);
+    if (!legs.length) return;
 
-    mainTitle.textContent = `${cleanTime(origin?.time)} → ${cleanTime(destination?.time)}`;
-    mainSub.textContent = `${cleanStationName(origin?.name)} till ${cleanStationName(destination?.name)}`;
+    navOriginName.textContent = cleanStationName(legs[0].Origin?.name);
 
     let html = "";
 
     legs.forEach((leg, idx) => {
-        if (leg.type === "TRSF") return;
-        if (leg.type !== "JNY" && leg.type !== "WALK") return;
+        const origin = leg.Origin;
+        const destination = leg.Destination;
+        const depTime = cleanTime(origin?.time);
+        const arrTime = cleanTime(destination?.time);
+        const legDur = calculateDuration(`${origin.date}T${origin.time}`, `${destination.date}T${destination.time}`);
 
-        const legOrigin = leg.Origin;
-        const legDestination = leg.Destination;
-        if (!legOrigin || !legDestination) return;
+        /* 1. OPTIONAL TRANSFER HEADER BEFORE CARD */
+        if (idx > 0) {
+            const prevLeg = legs[idx - 1];
+            const prevArrTime = prevLeg.Destination?.time;
+            const prevArrDate = prevLeg.Destination?.date;
+            const transferMin = calculateDuration(`${prevArrDate}T${prevArrTime}`, `${origin.date}T${origin.time}`);
 
-        const depTime = cleanTime(legOrigin.time);
-        const arrTime = cleanTime(legDestination.time);
-        const durationMin = calculateDuration(`${legOrigin.date}T${legOrigin.time}`, `${legDestination.date}T${legDestination.time}`);
+            const isNextMetro = checkIfMetro(leg);
+            const targetModeText = leg.type === "WALK" ? "promenad" : (isNextMetro ? "tunnelbana" : "buss");
 
-        if (leg.type === "WALK") {
             html += `
-                <div class="sl-leg-card walk-leg">
-                    <div class="leg-header-row">
-                        <span class="leg-title-text">Promenad</span>
-                        <span class="leg-badge">${durationMin !== null ? durationMin + ' min' : ''}</span>
+                <div class="transfer-strip">
+                    <span>${transferMin > 0 ? transferMin + ' min' : '< 1 min'}</span>
+                    <svg viewBox="0 0 24 24"><path d="M11 4h2v12l5.5-5.5 1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5 11 16V4z"/></svg>
+                    <span>Byt till ${targetModeText}</span>
+                </div>
+            `;
+        }
+
+        /* 2. RENDER WALKING LEG */
+        if (leg.type === "WALK") {
+            const distMeters = leg.dist || 240;
+            html += `
+                <div class="card-block walk-card">
+                    <div class="walk-badge-box">
+                        <svg viewBox="0 0 24 24"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7z"/></svg>
                     </div>
-                    <div class="leg-stops-list">
-                        <div class="stop-row">
-                            <span class="stop-time">${depTime}</span>
-                            <span class="stop-name">Avresa från ${escapeHTML(cleanStationName(legOrigin.name))}</span>
+                    <div class="timeline-row">
+                        <div class="time-column">
+                            <span class="dep-time">${depTime}</span>
+                            <span class="travel-duration">${legDur !== null ? legDur + ' min' : ''}</span>
+                            <span class="arr-time">${arrTime}</span>
                         </div>
-                        <div class="stop-row">
-                            <span class="stop-time">${arrTime}</span>
-                            <span class="stop-name">Ankomst till ${escapeHTML(cleanStationName(legDestination.name))}</span>
+                        <div class="spine-column">
+                            <div class="spine-dot" style="background:#fff;"></div>
+                            <div class="spine-bar dotted-walk"></div>
+                            <div class="spine-dot" style="background:#fff;"></div>
+                        </div>
+                        <div class="info-column">
+                            <div class="station-title">${escapeHTML(cleanStationName(origin.name))}</div>
+                            <div class="route-desc-text" style="margin: 16px 0;">Gå ${distMeters} m</div>
+                            <div class="station-title">${escapeHTML(cleanStationName(destination.name))}</div>
                         </div>
                     </div>
                 </div>
             `;
-        } else {
-            const isT = checkIfMetro(leg);
-            const line = getLineNumber(leg);
-            const transportType = isT ? "Tunnelbana" : "Buss";
-            const direction = leg.direction ? `mot ${escapeHTML(cleanStationName(leg.direction))}` : "";
-            
-            // Extract intermediate stops if available
-            const intermediateStops = leg.Stops?.Stop || [];
-            const hasStops = intermediateStops.length > 2;
-            const middleStops = intermediateStops.slice(1, intermediateStops.length - 1);
+            return;
+        }
 
-            let intermediateHTML = "";
-            if (hasStops) {
-                let innerStopsList = "";
-                middleStops.forEach(st => {
-                    innerStopsList += `
-                        <div class="stop-row">
-                            <span class="stop-time">${cleanTime(st.depTime || st.arrTime)}</span>
-                            <span class="stop-name">${escapeHTML(cleanStationName(st.name))}</span>
-                        </div>
-                    `;
-                });
+        /* 3. RENDER BUS / METRO TRANSIT CARD */
+        const isMetro = checkIfMetro(leg);
+        const line = getLineNumber(leg);
+        const lineType = isMetro ? "metro" : "bus";
+        const direction = leg.direction ? cleanStationName(leg.direction) : "";
 
-                intermediateHTML = `
-                    <button class="intermediate-toggle" onclick="toggleStops(this)">
-                        <span>Visa ${middleStops.length} mellanliggande hållplatser</span>
-                        <span>▼</span>
-                    </button>
-                    <div class="intermediate-stops-container">
-                        ${innerStopsList}
+        // Intermediate stops
+        const allStops = leg.Stops?.Stop || [];
+        const middleStops = allStops.slice(1, allStops.length - 1);
+        let intermediateHTML = "";
+
+        if (middleStops.length > 0) {
+            let listRows = "";
+            middleStops.forEach(st => {
+                listRows += `
+                    <div class="sub-stop-entry">
+                        <span>${escapeHTML(cleanStationName(st.name))}</span>
+                        <span>${cleanTime(st.depTime || st.arrTime)}</span>
                     </div>
                 `;
-            }
+            });
 
-            html += `
-                <div class="sl-leg-card ${isT ? 'metro-leg' : 'bus-leg'}">
-                    <div class="leg-header-row">
-                        <span class="leg-title-text">${transportType} ${escapeHTML(line)}</span>
-                        <span class="leg-badge">${durationMin !== null ? durationMin + ' min' : ''}</span>
-                    </div>
-                    
-                    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">
-                        Färdväg ${direction}
-                    </div>
-
-                    <div class="leg-stops-list">
-                        <div class="stop-row">
-                            <span class="stop-time">${depTime}</span>
-                            <span class="stop-name"><strong>${escapeHTML(cleanStationName(legOrigin.name))}</strong></span>
-                        </div>
-                        
-                        ${intermediateHTML}
-
-                        <div class="stop-row" style="margin-top: 8px;">
-                            <span class="stop-time">${arrTime}</span>
-                            <span class="stop-name"><strong>${escapeHTML(cleanStationName(legDestination.name))}</strong></span>
-                        </div>
-                    </div>
+            intermediateHTML = `
+                <button class="stops-accordion-trigger" onclick="toggleStops(this)">
+                    <span>Visa ${middleStops.length} hållplatser</span>
+                    <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                </button>
+                <div class="stops-sublist">
+                    ${listRows}
                 </div>
             `;
         }
 
-        // Check for transfer timing to the next leg
-        const nextLeg = legs[idx + 1];
-        if (nextLeg && nextLeg.type !== "TRSF") {
-            const nextOrigin = nextLeg.Origin;
-            if (nextOrigin && nextOrigin.time && legDestination.time) {
-                const transferTime = calculateDuration(`${legDestination.date}T${legDestination.time}`, `${nextOrigin.date}T${nextOrigin.time}`);
-                if (transferTime !== null && transferTime > 0) {
-                    html += `
-                        <div class="transfer-banner">
-                            ⇄ Byte vid ${escapeHTML(cleanStationName(legDestination.name))} · Väntetid ${transferTime} min
+        html += `
+            <div class="card-block">
+                <!-- Top Right Pill -->
+                <div class="card-corner-badge ${lineType}">
+                    <div class="corner-icon-box">
+                        ${isMetro ? 
+                            '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" fill="none"/><path fill="white" d="M7 8h10v2h-4v7h-2v-7H7z"/></svg>' : 
+                            '<svg viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>'
+                        }
+                    </div>
+                    <div class="corner-number-box">${escapeHTML(line)}</div>
+                </div>
+
+                <!-- 3-Column Timeline -->
+                <div class="timeline-row">
+                    <div class="time-column">
+                        <span class="dep-time">${depTime}</span>
+                        <span class="travel-duration">${legDur !== null ? legDur + ' min' : ''}</span>
+                        <span class="arr-time">${arrTime}</span>
+                    </div>
+
+                    <div class="spine-column">
+                        <div class="spine-dot"></div>
+                        <div class="spine-bar ${lineType}"></div>
+                        <div class="spine-dot"></div>
+                    </div>
+
+                    <div class="info-column">
+                        <div class="station-title">${escapeHTML(cleanStationName(origin.name))}</div>
+
+                        <div class="chips-cluster">
+                            ${isMetro ? '<span class="chip">Spår 4</span>' : ''}
+                            <span class="chip">
+                                <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                                Normalt lugnt
+                            </span>
                         </div>
-                    `;
-                }
-            }
-        }
+
+                        <div class="route-desc-text">
+                            ${isMetro ? 'Tunnelbana Grön linje' : 'Buss'} ${escapeHTML(line)} mot ${escapeHTML(direction)}
+                        </div>
+
+                        ${intermediateHTML}
+
+                        <div class="station-title">${escapeHTML(cleanStationName(destination.name))}</div>
+                    </div>
+                </div>
+            </div>
+        `;
     });
 
-    timelineContainer.innerHTML = html;
+    timelineFlow.innerHTML = html;
     listView.classList.add("hidden");
     detailView.classList.add("visible");
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-/* TOGGLE INTERMEDIATE STOPS */
-window.toggleStops = function(button) {
-    const container = button.nextElementSibling;
-    container.classList.toggle("open");
-    button.querySelector("span:last-child").textContent = container.classList.contains("open") ? "▲" : "▼";
-}
+/* ACCORDION INTERACTION */
+window.toggleStops = function(btn) {
+    const sublist = btn.nextElementSibling;
+    sublist.classList.toggle("open");
+    const svg = btn.querySelector("svg");
+    if (svg) {
+        svg.style.transform = sublist.classList.contains("open") ? "rotate(180deg)" : "rotate(0deg)";
+    }
+};
 
 document.getElementById("backButton").addEventListener("click", () => {
     document.getElementById("detailView").classList.remove("visible");
     document.getElementById("listView").classList.remove("hidden");
 });
 
+/* FETCH PIPELINE */
 async function fetchJourneys() {
-    const container = document.getElementById("journeysContainer");
+    const container = document.getElementById("journeysList");
     try {
         const res = await fetch(WORKER + "/resrobot/trips");
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -723,12 +846,12 @@ async function fetchJourneys() {
         cachedJourneys = data.Trip || data.TripList?.Trip || [];
         if (!Array.isArray(cachedJourneys) && cachedJourneys) cachedJourneys = [cachedJourneys];
 
-        renderJourneyList();
+        renderList();
     } catch (err) {
         console.error(err);
         container.innerHTML = `
-            <div class="error-box">
-                <strong>Kunde inte hämta resor</strong><br><br>
+            <div class="error-msg">
+                <strong>Kunde inte ladda resor</strong><br><br>
                 ${escapeHTML(err.message)}
             </div>
         `;
