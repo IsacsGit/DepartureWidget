@@ -52,7 +52,7 @@ html, body {
     background-color: var(--bg-page);
     color: var(--text-white);
     font-family: 'SL Gothic Text 2', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    font-weight: 500; /* SL Gothic Text 2 Medium som bas */
+    font-weight: 500;
     min-height: 100vh;
 }
 
@@ -134,7 +134,7 @@ html, body {
 
 .overview-times {
     font-size: 26px;
-    font-weight: 700; /* BOLD */
+    font-weight: 700;
     letter-spacing: -0.6px;
 }
 
@@ -146,7 +146,7 @@ html, body {
 
 .overview-duration {
     font-size: 14px;
-    font-weight: 700; /* BOLD */
+    font-weight: 700;
     color: var(--text-subtle);
 }
 
@@ -162,7 +162,7 @@ html, body {
 
 .overview-stations strong {
     color: var(--text-white);
-    font-weight: 700; /* BOLD */
+    font-weight: 700;
 }
 
 .overview-badges {
@@ -179,7 +179,7 @@ html, body {
     padding: 4px 10px;
     border-radius: 8px;
     font-size: 13px;
-    font-weight: 700; /* BOLD */
+    font-weight: 700;
     color: var(--text-white);
 }
 
@@ -248,7 +248,7 @@ html, body {
 
 .nav-page-title {
     font-size: 17px;
-    font-weight: 700; /* BOLD */
+    font-weight: 700;
     letter-spacing: -0.2px;
 }
 
@@ -314,7 +314,7 @@ html, body {
 .corner-number-box {
     padding: 0 10px;
     font-size: 15px;
-    font-weight: 700; /* BOLD */
+    font-weight: 700;
     letter-spacing: -0.4px;
     color: #ffffff;
     line-height: 28px;
@@ -340,7 +340,7 @@ html, body {
 
 .dep-time, .arr-time {
     font-size: 16px;
-    font-weight: 700; /* BOLD */
+    font-weight: 700;
     color: var(--text-white);
     line-height: 1.1;
 }
@@ -402,7 +402,7 @@ html, body {
 
 .station-title {
     font-size: 16px;
-    font-weight: 700; /* BOLD */
+    font-weight: 700;
     color: var(--text-white);
     line-height: 1.2;
 }
@@ -432,9 +432,10 @@ html, body {
     fill: var(--text-subtle);
 }
 
+/* GRÅ TEXT SOM MATCHAR TIDERNA */
 .route-desc-text {
     font-size: 13px;
-    color: var(--text-white);
+    color: var(--text-subtle);
     margin-bottom: 12px;
     line-height: 1.35;
     font-weight: 500;
@@ -447,7 +448,7 @@ html, body {
     color: #499bed;
     font-size: 13px;
     font-family: inherit;
-    font-weight: 500; /* MEDIUM ENLIGT INSTRUKTION */
+    font-weight: 500;
     padding: 0;
     cursor: pointer;
     display: inline-flex;
@@ -701,7 +702,7 @@ function sanitizeLegs(legs) {
 }
 
 /* ==========================================================================
-   RENDER LIST (MED STAGGERED FADE-IN)
+   RENDER LIST
    ========================================================================== */
 function renderList() {
     const container = document.getElementById("journeysList");
@@ -730,11 +731,11 @@ function renderList() {
                 badgesHTML += `<span class="badge-item walk">Gå ${walkMin}m</span>`;
             } else {
                 const line = getLineNumber(leg);
-                const isT = checkIfMetro(leg);
                 const colorClass = getLineColorClass(leg);
+                // ENDAST LINJENUMMER (INGET "Buss" ELLER "T")
                 badgesHTML += `
                     <span class="badge-item ${colorClass}">
-                        ${isT ? '' : ''} ${escapeHTML(line)}
+                        ${escapeHTML(line)}
                     </span>
                 `;
             }
@@ -742,7 +743,6 @@ function renderList() {
 
         const card = document.createElement("div");
         card.className = "journey-overview-card";
-        // Förskjuten animation per kort (0.05s, 0.1s, 0.15s...)
         card.style.animationDelay = `${index * 0.05}s`;
 
         card.innerHTML = `
