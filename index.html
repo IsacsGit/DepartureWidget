@@ -307,7 +307,7 @@ html, body {
 /* THE TIMELINE THREE-COLUMN STRUCTURE */
 .timeline-row {
     display: grid;
-    grid-template-columns: 50px 16px 1fr;
+    grid-template-columns: 52px 16px 1fr;
     column-gap: 12px;
 }
 
@@ -318,6 +318,12 @@ html, body {
     text-align: left;
 }
 
+/* TIME BLOCKS WITH DELAY STYLING */
+.time-entry {
+    display: flex;
+    flex-direction: column;
+}
+
 .dep-time, .arr-time {
     font-size: 16px;
     font-weight: 700;
@@ -325,10 +331,19 @@ html, body {
     line-height: 1.1;
 }
 
+.sched-time-crossed {
+    font-size: 13px;
+    color: var(--text-subtle);
+    text-decoration: line-through;
+    margin-top: 2px;
+    font-weight: 500;
+}
+
 .travel-duration {
     font-size: 13px;
     color: var(--text-subtle);
     font-weight: 500;
+    margin: 8px 0;
 }
 
 .spine-column {
@@ -518,7 +533,7 @@ html, body {
 
 <div class="screen-wrapper">
 
-    <!-- STATUS TEXT (HUR LÄNGE SEN DET UPPDATERADES) -->
+    <!-- STATUS TEXT -->
     <div id="updateStatus" class="update-status"></div>
 
     <!-- ================= LIST VIEW ================= -->
@@ -571,7 +586,6 @@ function updateStatusText() {
     }
 }
 
-// Kör status-text uppdatering varje 10 sekunder
 setInterval(updateStatusText, 10000);
 
 /* HELPERS */
@@ -593,6 +607,29 @@ function escapeHTML(value) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+}
+
+/* REALTIME & DELAY LOGIC */
+function getStopTiming(stopPoint) {
+    if (!stopPoint) return { displayTime: "", schedTime: "", isDelayed: false, fullDateTime: "" };
+
+    const schedT = stopPoint.time || "";
+    const rtT = stopPoint.rtTime || "";
+    const date = stopPoint.rtDate || stopPoint.date || new Date().toISOString().split('T')[0];
+
+    const schedClean = cleanTime(schedT);
+    const rtClean = cleanTime(rtT);
+
+    // Om det finns en realtid och den skiljer sig från ordinarie tidtabellstid
+    const isDelayed = Boolean(rtT && rtClean !== schedClean);
+    const displayTime = isDelayed ? rtClean : schedClean;
+
+    return {
+        displayTime,
+        schedTime: schedClean,
+        isDelayed,
+        fullDateTime: `${date}T${rtT || schedT}`
+    };
 }
 
 function calculateDuration(startStr, endStr) {
@@ -658,12 +695,10 @@ function renderList() {
         const legs = sanitizeLegs(trip.LegList?.Leg || []);
         if (!legs.length) return;
 
-        const origin = legs[0].Origin;
-        const destination = legs[legs.length - 1].Destination;
+        const originTiming = getStopTiming(legs[0].Origin);
+        const destTiming = getStopTiming(legs[legs.length - 1].Destination);
 
-        const startT = cleanTime(origin.time);
-        const endT = cleanTime(destination.time);
-        const totalDuration = calculateDuration(`${origin.date}T${origin.time}`, `${destination.date}T${destination.time}`);
+        const totalDuration = calculateDuration(originTiming.fullDateTime, destTiming.fullDateTime);
 
         let badgesHTML = "";
         legs.forEach((leg, idx) => {
@@ -689,14 +724,14 @@ function renderList() {
         card.innerHTML = `
             <div class="overview-top">
                 <div class="overview-times">
-                    ${startT} <span>→</span> ${endT}
+                    ${originTiming.displayTime} <span>→</span> ${destTiming.displayTime}
                 </div>
                 <div class="overview-duration">
                     ${totalDuration !== null ? totalDuration + ' min' : ''}
                 </div>
             </div>
             <div class="overview-stations">
-                <span>Från: <strong>${escapeHTML(cleanStationName(origin.name))}</strong></span>
+                <span>Från: <strong>${escapeHTML(cleanStationName(legs[0].Origin?.name))}</strong></span>
             </div>
             <div class="overview-badges">
                 ${badgesHTML}
@@ -728,15 +763,15 @@ function renderDetail(trip) {
     legs.forEach((leg, idx) => {
         const origin = leg.Origin;
         const destination = leg.Destination;
-        const depTime = cleanTime(origin?.time);
-        const arrTime = cleanTime(destination?.time);
-        const legDur = calculateDuration(`${origin.date}T${origin.time}`, `${destination.date}T${destination.time}`);
+
+        const depTiming = getStopTiming(origin);
+        const arrTiming = getStopTiming(destination);
+
+        const legDur = calculateDuration(depTiming.fullDateTime, arrTiming.fullDateTime);
 
         if (idx > 0) {
-            const prevLeg = legs[idx - 1];
-            const prevArrTime = prevLeg.Destination?.time;
-            const prevArrDate = prevLeg.Destination?.date;
-            const transferMin = calculateDuration(`${prevArrDate}T${prevArrTime}`, `${origin.date}T${origin.time}`);
+            const prevDestTiming = getStopTiming(legs[idx - 1].Destination);
+            const transferMin = calculateDuration(prevDestTiming.fullDateTime, depTiming.fullDateTime);
 
             const isNextMetro = checkIfMetro(leg);
             const targetModeText = leg.type === "WALK" ? "promenad" : (isNextMetro ? "tunnelbana" : "buss");
@@ -759,9 +794,9 @@ function renderDetail(trip) {
                     </div>
                     <div class="timeline-row">
                         <div class="time-column">
-                            <span class="dep-time">${depTime}</span>
+                            <span class="dep-time">${depTiming.displayTime}</span>
                             <span class="travel-duration">${legDur !== null ? legDur + ' min' : ''}</span>
-                            <span class="arr-time">${arrTime}</span>
+                            <span class="arr-time">${arrTiming.displayTime}</span>
                         </div>
                         <div class="spine-column">
                             <div class="spine-dot" style="background:#fff;"></div>
@@ -791,10 +826,11 @@ function renderDetail(trip) {
         if (middleStops.length > 0) {
             let listRows = "";
             middleStops.forEach(st => {
+                const stopTiming = cleanTime(st.rtDepTime || st.depTime || st.rtArrTime || st.arrTime);
                 listRows += `
                     <div class="sub-stop-entry">
                         <span>${escapeHTML(cleanStationName(st.name))}</span>
-                        <span>${cleanTime(st.depTime || st.arrTime)}</span>
+                        <span>${stopTiming}</span>
                     </div>
                 `;
             });
@@ -824,9 +860,17 @@ function renderDetail(trip) {
 
                 <div class="timeline-row">
                     <div class="time-column">
-                        <span class="dep-time">${depTime}</span>
+                        <div class="time-entry">
+                            <span class="dep-time">${depTiming.displayTime}</span>
+                            ${depTiming.isDelayed ? `<span class="sched-time-crossed">${depTiming.schedTime}</span>` : ''}
+                        </div>
+
                         <span class="travel-duration">${legDur !== null ? legDur + ' min' : ''}</span>
-                        <span class="arr-time">${arrTime}</span>
+
+                        <div class="time-entry">
+                            <span class="arr-time">${arrTiming.displayTime}</span>
+                            ${arrTiming.isDelayed ? `<span class="sched-time-crossed">${arrTiming.schedTime}</span>` : ''}
+                        </div>
                     </div>
 
                     <div class="spine-column">
@@ -891,7 +935,6 @@ async function fetchJourneys() {
         cachedJourneys = data.Trip || data.TripList?.Trip || [];
         if (!Array.isArray(cachedJourneys) && cachedJourneys) cachedJourneys = [cachedJourneys];
 
-        // Spara aktuell tid och uppdatera status
         lastUpdatedTime = new Date();
         updateStatusText();
 
