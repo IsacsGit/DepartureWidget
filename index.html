@@ -1537,8 +1537,9 @@ async function loadJourneys() {
 
 
         journeys =
-            data.TripList?.Trip ||
-            [];
+    data.Trip ||
+    data.TripList?.Trip ||
+    [];
 
 
         /*
