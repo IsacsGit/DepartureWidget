@@ -1,2216 +1,1609 @@
 <!DOCTYPE html>
 <html lang="sv">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Leaflet -->
-<link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+Västergöksvägen → Blackeberg
+</title>
+
 
 <style>
-    * {
-        box-sizing: border-box;
+
+* {
+    box-sizing: border-box;
+}
+
+
+:root {
+
+    --background: #101318;
+
+    --surface: #1d2228;
+
+    --surface-hover: #272d34;
+
+    --text: #f5f6f7;
+
+    --secondary: #aeb4bb;
+
+    --muted: #737981;
+
+    --accent: #28a9ed;
+
+    --green: #20a957;
+
+    --divider: #30363e;
+}
+
+
+html,
+body {
+
+    margin: 0;
+
+    min-height: 100%;
+
+    background:
+        var(--background);
+
+    color:
+        var(--text);
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+}
+
+
+body {
+
+    min-height: 100vh;
+
+}
+
+
+.app {
+
+    width: 100%;
+
+    max-width: 760px;
+
+    margin: auto;
+
+    min-height: 100vh;
+
+    padding-bottom: 30px;
+
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.header {
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 20;
+
+    background:
+        rgba(16,19,24,0.94);
+
+    backdrop-filter:
+        blur(18px);
+
+    padding:
+        25px 22px 20px;
+
+    border-bottom:
+        1px solid rgba(255,255,255,0.04);
+
+}
+
+
+.title {
+
+    font-size: 25px;
+
+    font-weight: 750;
+
+    letter-spacing:
+        -0.4px;
+
+}
+
+
+.subtitle {
+
+    margin-top: 5px;
+
+    color:
+        var(--secondary);
+
+    font-size: 14px;
+
+}
+
+
+/* =====================================================
+   JOURNEY LIST
+===================================================== */
+
+.journeys {
+
+    padding:
+        12px 14px;
+
+}
+
+
+.journey {
+
+    width: 100%;
+
+    border: none;
+
+    background:
+        var(--surface);
+
+    color:
+        var(--text);
+
+    border-radius:
+        22px;
+
+    padding:
+        19px 18px;
+
+    margin-bottom:
+        9px;
+
+    text-align:
+        left;
+
+    cursor:
+        pointer;
+
+    transition:
+        background 0.15s,
+        transform 0.1s;
+
+}
+
+
+.journey:hover {
+
+    background:
+        var(--surface-hover);
+
+}
+
+
+.journey:active {
+
+    transform:
+        scale(0.99);
+
+}
+
+
+/* =====================================================
+   TIMES
+===================================================== */
+
+.times {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        1fr
+        28px
+        1fr;
+
+    align-items:
+        center;
+
+}
+
+
+.time {
+
+    font-size:
+        28px;
+
+    font-weight:
+        750;
+
+    line-height:
+        1;
+
+}
+
+
+.time.arrival {
+
+    text-align:
+        right;
+
+}
+
+
+.arrow {
+
+    text-align:
+        center;
+
+    color:
+        var(--secondary);
+
+    font-size:
+        20px;
+
+}
+
+
+/* =====================================================
+   STATIONS
+===================================================== */
+
+.stations {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        1fr
+        28px
+        1fr;
+
+    margin-top:
+        8px;
+
+}
+
+
+.station {
+
+    color:
+        var(--secondary);
+
+    font-size:
+        14px;
+
+}
+
+
+.station.arrival {
+
+    text-align:
+        right;
+
+}
+
+
+/* =====================================================
+   SUMMARY
+===================================================== */
+
+.summary {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        8px;
+
+    margin-top:
+        15px;
+
+    color:
+        var(--secondary);
+
+    font-size:
+        13px;
+
+}
+
+
+.transport {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    gap:
+        5px;
+
+}
+
+
+.line {
+
+    display:
+        inline-flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    min-width:
+        26px;
+
+    height:
+        24px;
+
+    padding:
+        0 7px;
+
+    border-radius:
+        5px;
+
+    color:
+        white;
+
+    font-weight:
+        750;
+
+    font-size:
+        13px;
+
+}
+
+
+.line.bus {
+
+    background:
+        #080a0d;
+
+}
+
+
+.line.metro {
+
+    background:
+        var(--green);
+
+}
+
+
+/* =====================================================
+   LOADING
+===================================================== */
+
+.loading {
+
+    padding:
+        45px 20px;
+
+    text-align:
+        center;
+
+    color:
+        var(--secondary);
+
+}
+
+
+.spinner {
+
+    width:
+        26px;
+
+    height:
+        26px;
+
+    margin:
+        0 auto 15px;
+
+    border:
+        3px solid #343a41;
+
+    border-top-color:
+        var(--accent);
+
+    border-radius:
+        50%;
+
+    animation:
+        spin 0.8s linear infinite;
+
+}
+
+
+@keyframes spin {
+
+    to {
+
+        transform:
+            rotate(360deg);
+
     }
 
-    html,
-    body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background: transparent;
-        font-family:
-            -apple-system,
-            BlinkMacSystemFont,
-            "Segoe UI",
-            sans-serif;
-    }
+}
 
-    body {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
 
-    .widget {
-        width: 100%;
-        height: 100%;
-        padding: 12px 14px;
-        background: #111111;
-        color: white;
-        border-radius: 16px;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-    }
+/* =====================================================
+   ERROR
+===================================================== */
+
+.error {
+
+    margin:
+        20px 14px;
+
+    padding:
+        20px;
+
+    border-radius:
+        18px;
+
+    background:
+        #261b1d;
+
+    color:
+        #ffb8bd;
+
+}
+
+
+/* =====================================================
+   DETAIL VIEW
+===================================================== */
+
+.detail {
+
+    display:
+        none;
+
+}
+
+
+.detail.visible {
+
+    display:
+        block;
+
+}
+
+
+.list.hidden {
+
+    display:
+        none;
+
+}
+
+
+.back {
+
+    border: none;
+
+    background: transparent;
+
+    color:
+        var(--accent);
+
+    font-size:
+        17px;
+
+    font-weight:
+        600;
+
+    padding:
+        0;
+
+    margin-bottom:
+        20px;
+
+    cursor:
+        pointer;
+
+}
+
+
+.detail-title {
+
+    font-size:
+        25px;
+
+    font-weight:
+        750;
+
+    margin-bottom:
+        25px;
+
+}
+
+
+.detail-leg {
+
+    position:
+        relative;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        64px
+        25px
+        1fr;
+
+    min-height:
+        105px;
+
+}
+
+
+.detail-times {
+
+    font-size:
+        19px;
+
+    font-weight:
+        700;
+
+}
+
+
+.detail-line {
+
+    position:
+        relative;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    flex-direction:
+        column;
+
+}
+
+
+.detail-line::before {
+
+    content:
+        "";
+
+    position:
+        absolute;
+
+    top:
+        8px;
+
+    bottom:
+        8px;
+
+    left:
+        50%;
+
+    width:
+        4px;
+
+    transform:
+        translateX(-50%);
+
+    background:
+        #555c64;
+
+    border-radius:
+        5px;
+
+}
+
+
+.detail-dot {
+
+    width:
+        14px;
+
+    height:
+        14px;
+
+    border-radius:
+        50%;
+
+    background:
+        var(--background);
+
+    border:
+        4px solid white;
+
+    z-index:
+        2;
+
+}
+
+
+.detail-info {
+
+    padding-left:
+        12px;
+
+}
+
+
+.detail-stop {
+
+    font-size:
+        19px;
+
+    font-weight:
+        700;
+
+}
+
+
+.detail-vehicle {
+
+    margin-top:
+        8px;
+
+    color:
+        var(--secondary);
+
+    font-size:
+        14px;
+
+}
+
+
+.detail-transfer {
+
+    padding:
+        13px 0 18px 89px;
+
+    color:
+        var(--secondary);
+
+    font-size:
+        14px;
+
+}
+
+
+.detail-footer {
+
+    margin-top:
+        15px;
+
+    color:
+        var(--muted);
+
+    font-size:
+        12px;
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 600px) {
 
     .title {
-        font-size: 18px;
-        font-weight: 700;
-        margin-bottom: 8px;
-        flex-shrink: 0;
+
+        font-size:
+            22px;
+
     }
 
-    .route-summary {
-        color: #aaa;
-        font-size: 13px;
-        margin-bottom: 9px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        flex-shrink: 0;
+
+    .journey {
+
+        border-radius:
+            19px;
+
     }
 
-    .trip-row {
-        display: flex;
-        align-items: center;
-        min-height: 34px;
-        gap: 8px;
-    }
-
-    .line {
-        min-width: 42px;
-        height: 26px;
-        padding: 0 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 13px;
-        background: #00a651;
-        color: white;
-        font-size: 14px;
-        font-weight: 700;
-        flex-shrink: 0;
-    }
-
-    .destination {
-        min-width: 0;
-        width: 145px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 15px;
-    }
 
     .time {
-        margin-left: auto;
-        font-size: 15px;
-        font-weight: 600;
-        white-space: nowrap;
+
+        font-size:
+            25px;
+
     }
 
-    .now {
-        font-weight: 800;
-    }
+}
 
-    .transfer {
-        display: flex;
-        align-items: center;
-        min-height: 30px;
-        padding-left: 4px;
-        color: #aaa;
-        font-size: 13px;
-    }
-
-    .arrow {
-        margin: 0 6px;
-        color: #666;
-    }
-
-    .map-wrap {
-        position: relative;
-        flex: 1;
-        min-height: 150px;
-        margin-top: 9px;
-        overflow: hidden;
-        border-radius: 12px;
-    }
-
-    #map {
-        width: 100%;
-        height: 100%;
-        min-height: 150px;
-    }
-
-    .map-status {
-        position: absolute;
-        z-index: 1000;
-        left: 8px;
-        bottom: 8px;
-        padding: 5px 8px;
-        border-radius: 8px;
-        background: rgba(17, 17, 17, .88);
-        color: #aaa;
-        font-size: 11px;
-        pointer-events: none;
-    }
-
-    .vehicle-marker {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background: #00a651;
-        border: 3px solid white;
-        box-shadow: 0 1px 5px rgba(0,0,0,.45);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 9px;
-        font-weight: 800;
-    }
-
-    .metro-marker {
-        background: #e00034;
-    }
-
-    .stop-marker {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: white;
-        border: 3px solid #00a651;
-    }
-
-    .error {
-        color: #ff7777;
-        font-size: 13px;
-        line-height: 1.45;
-    }
-
-    .loading {
-        color: #aaa;
-        font-size: 14px;
-    }
-
-    .leaflet-control-attribution {
-        font-size: 8px !important;
-    }
-
-    .leaflet-control-zoom {
-        display: none;
-    }
 </style>
+
 </head>
+
 
 <body>
 
-<div class="widget">
 
-    <div class="title">
-        Västergöksvägen → Blackeberg
-    </div>
+<div class="app">
 
-    <div id="routeSummary" class="route-summary">
-        Hämtar aktuell resväg…
-    </div>
 
-    <div id="routeRows">
-        <div class="loading">
-            Hämtar avgångar…
+    <!-- HEADER -->
+
+    <header class="header">
+
+        <div class="title">
+
+            Västergöksvägen
+            <span style="color:#737981">→</span>
+            Blackeberg
+
         </div>
-    </div>
 
-    <div class="map-wrap">
-        <div id="map"></div>
+        <div class="subtitle">
 
-        <div id="mapStatus" class="map-status">
-            Hämtar fordonspositioner…
+            Nästa resor
+
         </div>
-    </div>
+
+    </header>
+
+
+    <!-- LIST -->
+
+    <main
+        id="list"
+        class="list"
+    >
+
+        <div
+            id="journeys"
+            class="journeys"
+        >
+
+            <div class="loading">
+
+                <div class="spinner"></div>
+
+                Hämtar resor...
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- DETAIL -->
+
+    <main
+        id="detail"
+        class="detail"
+    >
+
+        <div
+            style="
+                padding:25px 20px;
+            "
+        >
+
+            <button
+                id="back"
+                class="back"
+            >
+                ← Alla resor
+            </button>
+
+            <div
+                id="detailTitle"
+                class="detail-title"
+            ></div>
+
+            <div
+                id="detailContent"
+            ></div>
+
+            <div
+                class="detail-footer"
+            >
+                Resan hämtas från ResRobot.
+                Trafikläget kan ändras efter
+                att resan planerats.
+            </div>
+
+        </div>
+
+    </main>
+
 
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<script type="module">
-
-/* ============================================================
-   API-NYCKLAR
-   ============================================================ */
-
-/*
- * ResRobot v2.1
- */
-const RESROBOT_KEY =
-    "PASTE_YOUR_RESROBOT_KEY_HERE";
+<script>
 
 
-/*
- * Trafiklab GTFS Regional Realtime.
- *
- * Nyckeln du gav:
- *
- * e56430164e3b4fc8a4b3461ac1e52d8f
- */
-const TRAFIKLAB_KEY =
-    "e56430164e3b4fc8a4b3461ac1e52d8f";
+const WORKER =
+    "https://sl-transit-proxy.haxxerlikeshaxx.workers.dev";
 
 
-/* ============================================================
-   FASTA SL-ID
-   ============================================================ */
-
-const STOPS = {
-    origin: {
-        id: "3870",
-        name: "Västergöksvägen"
-    },
-
-    transfer: {
-        id: "9103",
-        name: "Vällingby"
-    },
-
-    destination: {
-        id: "9105",
-        name: "Blackeberg"
-    }
-};
+let journeys = [];
 
 
-/*
- * GTFS Regional operator.
- */
-const OPERATOR = "sl";
+/* =====================================================
+   HELPERS
+===================================================== */
 
 
-const RESROBOT_BASE =
-    "https://api.resrobot.se/v2.1";
+function escapeHTML(value) {
 
-const SL_BASE =
-    "https://transport.integration.sl.se/v1";
-
-const GTFS_RT_BASE =
-    "https://opendata.samtrafiken.se/gtfs-rt/sl";
-
-const GTFS_STATIC_URL =
-    `https://opendata.samtrafiken.se/gtfs/sl/sl.zip?key=${
-        encodeURIComponent(TRAFIKLAB_KEY)
-    }`;
-
-const contentRows =
-    document.getElementById("routeRows");
-
-const routeSummary =
-    document.getElementById("routeSummary");
-
-const mapStatus =
-    document.getElementById("mapStatus");
-
-
-/* ============================================================
-   HJÄLP
-   ============================================================ */
-
-function escapeHtml(value) {
     return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
 
 
-function normalize(value) {
-    return String(value ?? "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-}
+function timeValue(date, time) {
 
-
-function getProduct(leg) {
-
-    if (!leg) {
+    if (!date || !time)
         return null;
-    }
 
-    if (Array.isArray(leg.Product)) {
-        return leg.Product[0] || null;
-    }
+    return new Date(
+        `${date}T${time}:00`
+    );
 
-    return leg.Product || null;
 }
 
 
-function getLine(leg) {
+function durationMinutes(start, end) {
 
-    const product =
-        getProduct(leg);
+    const a =
+        timeValue(
+            start.date,
+            start.time
+        );
 
-    return String(
-        product?.num ??
-        leg?.number ??
-        ""
-    ).trim();
-}
+    const b =
+        timeValue(
+            end.date,
+            end.time
+        );
 
-
-function isJourney(leg) {
-    return leg?.type === "JNY";
-}
-
-
-function getLegs(trip) {
-
-    const legs =
-        trip?.LegList?.Leg;
-
-    return Array.isArray(legs)
-        ? legs
-        : [];
-}
-
-
-function minutesFromNow(timestamp) {
-
-    if (!timestamp) {
+    if (!a || !b)
         return null;
-    }
-
-    const time =
-        new Date(timestamp).getTime();
-
-    if (!Number.isFinite(time)) {
-        return null;
-    }
 
     return Math.round(
-        (time - Date.now()) / 60000
+        (b - a) / 60000
     );
+
 }
 
 
-function formatMinutes(timestamp) {
+/* =====================================================
+   PRODUCT
+===================================================== */
 
-    const minutes =
-        minutesFromNow(timestamp);
 
-    if (minutes === null) {
+function productForLeg(leg) {
+
+    const product =
+        Array.isArray(leg.Product)
+            ? leg.Product[0]
+            : leg.Product;
+
+    if (!product)
+        return null;
+
+    return product;
+}
+
+
+function lineForLeg(leg) {
+
+    const product =
+        productForLeg(leg);
+
+    if (!product)
         return "";
-    }
 
-    if (minutes <= 0) {
-        return `<span class="now">Nu</span>`;
-    }
-
-    return `${minutes} min`;
-}
-
-
-async function fetchJson(url, label) {
-
-    const response =
-        await fetch(
-            url,
-            {
-                cache: "no-store"
-            }
-        );
-
-    if (!response.ok) {
-        throw new Error(
-            `${label}: HTTP ${response.status}`
-        );
-    }
-
-    return response.json();
-}
-
-
-/* ============================================================
-   RESROBOT
-   ============================================================ */
-
-function resrobotDateTime() {
-
-    const now =
-        new Date();
-
-    const date =
-        `${now.getFullYear()}-` +
-        `${String(
-            now.getMonth() + 1
-        ).padStart(2, "0")}-` +
-        `${String(
-            now.getDate()
-        ).padStart(2, "0")}`;
-
-    const time =
-        `${String(
-            now.getHours()
-        ).padStart(2, "0")}:` +
-        `${String(
-            now.getMinutes()
-        ).padStart(2, "0")}`;
-
-    return {
-        date,
-        time
-    };
-}
-
-
-async function getResRobotTrip() {
-
-    /*
-     * Västergöksvägen:
-     * 7449901 är det verifierade ResRobot-id:t.
-     *
-     * Blackeberg använder vi inte som ResRobot-id här.
-     *
-     * I stället planerar vi till Blackebergs
-     * koordinat/SL-hållplats via ResRobot lookup.
-     */
-
-    const lookupParams =
-        new URLSearchParams({
-            input: "Blackeberg",
-            maxNo: "10",
-            format: "json",
-            lang: "sv",
-            accessId: RESROBOT_KEY
-        });
-
-    const lookup =
-        await fetchJson(
-            `${RESROBOT_BASE}/location.name?${lookupParams}`,
-            "ResRobot Blackeberg"
-        );
-
-    const locations =
-        lookup?.StopLocation;
-
-    if (
-        !Array.isArray(locations) ||
-        locations.length === 0
-    ) {
-        throw new Error(
-            "ResRobot hittade inte Blackeberg."
-        );
-    }
-
-    const exact =
-        locations.find(
-            x =>
-                normalize(x.name) ===
-                normalize("Blackeberg")
-        );
-
-    const destination =
-        exact || locations[0];
-
-    if (!destination?.extId) {
-        throw new Error(
-            "Blackeberg saknar ResRobot-id."
-        );
-    }
-
-    const {
-        date,
-        time
-    } =
-        resrobotDateTime();
-
-    const params =
-        new URLSearchParams({
-            format: "json",
-
-            originId: "7449901",
-
-            destId:
-                destination.extId,
-
-            date,
-            time,
-
-            numF: "5",
-
-            passlist: "1",
-
-            showPassingPoints: "true",
-
-            accessId:
-                RESROBOT_KEY
-        });
-
-    const data =
-        await fetchJson(
-            `${RESROBOT_BASE}/trip?${params}`,
-            "ResRobot reseplanering"
-        );
-
-    const trips =
-        data?.Trip;
-
-    if (
-        !Array.isArray(trips) ||
-        trips.length === 0
-    ) {
-        throw new Error(
-            "ResRobot hittade ingen resa."
-        );
-    }
-
-    return trips;
-}
-
-
-/* ============================================================
-   SL AVGÅNGAR
-   ============================================================ */
-
-async function getDepartures(siteId) {
-
-    return fetchJson(
-        `${SL_BASE}/sites/${siteId}/departures`,
-        `SL avgångar ${siteId}`
-    );
-}
-
-
-function getDepartureLine(dep) {
-
-    return String(
-        dep?.line?.designation ??
-        ""
-    ).trim();
-}
-
-
-function getDepartureDestination(dep) {
-
-    return String(
-        dep?.destination ??
-        ""
-    ).trim();
-}
-
-
-function getDepartureExpected(dep) {
 
     return (
-        dep?.expected ??
-        dep?.scheduled ??
-        null
+        product.num ||
+        product.line ||
+        product.name ||
+        ""
     );
+
 }
 
 
-function findLineDeparture(
-    departures,
-    line
-) {
+function transportType(leg) {
 
-    const wanted =
-        String(line).trim();
+    const product =
+        productForLeg(leg);
 
-    const candidates =
-        departures.filter(
-            dep =>
-                getDepartureLine(dep) ===
-                wanted
-        );
+    if (!product)
+        return "";
 
-    if (
-        candidates.length === 0
-    ) {
-        return null;
-    }
-
-    const future =
-        candidates.filter(
-            dep => {
-
-                const value =
-                    getDepartureExpected(dep);
-
-                return (
-                    value &&
-                    minutesFromNow(value) >= -1
-                );
-            }
-        );
 
     return (
-        future[0] ||
-        candidates[0]
-    );
+        product.catOutS ||
+        product.catOut ||
+        product.cat ||
+        product.name ||
+        ""
+    ).toLowerCase();
+
 }
 
 
-/* ============================================================
-   KARTA
-   ============================================================ */
-
-const map =
-    L.map(
-        "map",
-        {
-            zoomControl: false,
-            attributionControl: true
-        }
-    );
-
-
-L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-        maxZoom: 19,
-        attribution:
-            '&copy; OpenStreetMap contributors'
-    }
-).addTo(map);
-
-
-let routeLayer = null;
-
-const stopMarkers = new Map();
-
-const vehicleMarkers = new Map();
-
-
-/*
- * Fallback-koordinater.
- *
- * Dessa ersätts med SL:s aktuella site-data
- * så fort den laddas.
- */
-const stopCoordinates = {
-    "3870": null,
-    "9103": null,
-    "9105": null
-};
-
-
-async function loadSLStopData() {
-
-    const data =
-        await fetchJson(
-            `${SL_BASE}/sites?expand=true`,
-            "SL hållplatser"
-        );
-
-    const sites =
-        Array.isArray(data)
-            ? data
-            : [];
-
-    for (const site of sites) {
-
-        const id =
-            String(
-                site?.id ??
-                site?.siteId ??
-                ""
-            );
-
-        if (
-            !Object.prototype.hasOwnProperty.call(
-                stopCoordinates,
-                id
-            )
-        ) {
-            continue;
-        }
-
-        const lat =
-            Number(
-                site?.lat ??
-                site?.latitude
-            );
-
-        const lon =
-            Number(
-                site?.lon ??
-                site?.longitude
-            );
-
-        if (
-            Number.isFinite(lat) &&
-            Number.isFinite(lon)
-        ) {
-            stopCoordinates[id] = {
-                lat,
-                lon,
-                name:
-                    site?.name ||
-                    ""
-            };
-        }
-    }
-
-    /*
-     * Västergöksvägen 3870 kan i vissa SL-data
-     * vara en äldre site-referens. Om den inte
-     * finns används ResRobot-data nedan.
-     */
-}
-
-
-/* ============================================================
-   STOPP-MARKÖRER
-   ============================================================ */
-
-function stopIcon() {
-
-    return L.divIcon({
-        className: "",
-        html:
-            `<div class="stop-marker"></div>`,
-        iconSize: [12, 12],
-        iconAnchor: [6, 6]
-    });
-}
-
-
-function drawStopMarkers() {
-
-    for (
-        const [
-            id,
-            marker
-        ] of stopMarkers
-    ) {
-        map.removeLayer(marker);
-    }
-
-    stopMarkers.clear();
-
-    const points = [];
-
-    for (
-        const [
-            id,
-            data
-        ] of Object.entries(
-            stopCoordinates
-        )
-    ) {
-
-        if (!data) {
-            continue;
-        }
-
-        const marker =
-            L.marker(
-                [
-                    data.lat,
-                    data.lon
-                ],
-                {
-                    icon:
-                        stopIcon()
-                }
-            )
-            .addTo(map)
-            .bindTooltip(
-                data.name ||
-                (
-                    id === "3870"
-                        ? "Västergöksvägen"
-                        : id === "9103"
-                            ? "Vällingby"
-                            : "Blackeberg"
-                )
-            );
-
-        stopMarkers.set(
-            id,
-            marker
-        );
-
-        points.push([
-            data.lat,
-            data.lon
-        ]);
-    }
-
-    if (
-        points.length >= 2
-    ) {
-
-        routeLayer =
-            L.polyline(
-                points,
-                {
-                    weight: 5,
-                    opacity: .85
-                }
-            ).addTo(map);
-
-        map.fitBounds(
-            routeLayer.getBounds(),
-            {
-                padding: [18, 18]
-            }
-        );
-    }
-}
-
-
-/* ============================================================
-   GTFS-RT PROTOBUF
-   ============================================================ */
-
-let GtfsRealtimeBindings = null;
-
-
-async function loadGTFSRealtimeLibrary() {
-
-    /*
-     * Version 1.x används här eftersom den är
-     * den browser-vänliga generationen av bindings.
-     *
-     * Trafiklab/GTFS använder protobuf för GTFS-RT.
-     */
-    const module =
-        await import(
-            "https://cdn.jsdelivr.net/npm/gtfs-realtime-bindings@1.1.1/+esm"
-        );
-
-    GtfsRealtimeBindings =
-        module.default ||
-        module;
-}
-
-
-async function fetchRealtimeFeed(
-    feedName
-) {
-
-    const url =
-        `${GTFS_RT_BASE}/${feedName}.pb?key=${
-            encodeURIComponent(
-                TRAFIKLAB_KEY
-            )
-        }`;
-
-    const response =
-        await fetch(
-            url,
-            {
-                cache: "no-store"
-            }
-        );
-
-    if (!response.ok) {
-        throw new Error(
-            `GTFS-RT ${feedName}: HTTP ${response.status}`
-        );
-    }
-
-    const buffer =
-        await response.arrayBuffer();
-
-    const bytes =
-        new Uint8Array(buffer);
-
-    const FeedMessage =
-        GtfsRealtimeBindings
-            .transit_realtime
-            .FeedMessage;
-
-    return FeedMessage.decode(bytes);
-}
-
-
-/* ============================================================
-   GTFS-RT VEHICLE POSITIONS
-   ============================================================ */
-
-function extractVehiclePositions(
-    feed
-) {
-
-    const result = [];
-
-    for (
-        const entity of feed.entity || []
-    ) {
-
-        const vehicle =
-            entity.vehicle;
-
-        if (!vehicle) {
-            continue;
-        }
-
-        const position =
-            vehicle.position;
-
-        if (!position) {
-            continue;
-        }
-
-        const latitude =
-            Number(
-                position.latitude
-            );
-
-        const longitude =
-            Number(
-                position.longitude
-            );
-
-        if (
-            !Number.isFinite(latitude) ||
-            !Number.isFinite(longitude)
-        ) {
-            continue;
-        }
-
-        const trip =
-            vehicle.trip || {};
-
-        const vehicleInfo =
-            vehicle.vehicle || {};
-
-        result.push({
-            id:
-                entity.id ||
-                vehicleInfo.id ||
-                `${latitude},${longitude}`,
-
-            routeId:
-                String(
-                    trip.routeId ||
-                    ""
-                ),
-
-            tripId:
-                String(
-                    trip.tripId ||
-                    ""
-                ),
-
-            latitude,
-            longitude,
-
-            bearing:
-                Number(
-                    position.bearing
-                ),
-
-            speed:
-                Number(
-                    position.speed
-                ),
-
-            label:
-                String(
-                    vehicleInfo.label ||
-                    vehicleInfo.name ||
-                    ""
-                ),
-
-            stopId:
-                String(
-                    vehicle.stopId ||
-                    ""
-                )
-        });
-    }
-
-    return result;
-}
-
-
-/* ============================================================
-   GTFS STATIC
-   ============================================================ */
-
-let staticData = null;
-
-
-/*
- * Enkel CSV-parser som klarar:
- * - komma
- * - citationstecken
- * - escaped citationstecken
- */
-function parseCSV(text) {
-
-    const rows = [];
-
-    let row = [];
-    let cell = "";
-    let quoted = false;
-
-    for (
-        let i = 0;
-        i < text.length;
-        i++
-    ) {
-
-        const char =
-            text[i];
-
-        if (char === '"') {
-
-            if (
-                quoted &&
-                text[i + 1] === '"'
-            ) {
-                cell += '"';
-                i++;
-            } else {
-                quoted = !quoted;
-            }
-
-            continue;
-        }
-
-        if (
-            char === "," &&
-            !quoted
-        ) {
-            row.push(cell);
-            cell = "";
-            continue;
-        }
-
-        if (
-            (char === "\n" ||
-             char === "\r") &&
-            !quoted
-        ) {
-
-            if (
-                char === "\r" &&
-                text[i + 1] === "\n"
-            ) {
-                i++;
-            }
-
-            row.push(cell);
-            rows.push(row);
-
-            row = [];
-            cell = "";
-
-            continue;
-        }
-
-        cell += char;
-    }
-
-    if (
-        cell.length > 0 ||
-        row.length > 0
-    ) {
-        row.push(cell);
-        rows.push(row);
-    }
-
-    if (
-        rows.length === 0
-    ) {
-        return [];
-    }
-
-    const headers =
-        rows[0];
-
-    return rows
-        .slice(1)
-        .filter(
-            row =>
-                row.length &&
-                row.some(
-                    value =>
-                        value !== ""
-                )
-        )
-        .map(row => {
-
-            const object = {};
-
-            headers.forEach(
-                (
-                    header,
-                    index
-                ) => {
-                    object[header] =
-                        row[index] ??
-                        "";
-                }
-            );
-
-            return object;
-        });
-}
-
-
-async function loadStaticGTFS() {
-
-    /*
-     * Static GTFS är en zip-fil.
-     */
-    const response =
-        await fetch(
-            GTFS_STATIC_URL,
-            {
-                cache: "no-store"
-            }
-        );
-
-    if (!response.ok) {
-        throw new Error(
-            `GTFS static: HTTP ${response.status}`
-        );
-    }
-
-    const buffer =
-        await response.arrayBuffer();
-
-    const JSZip =
-        (
-            await import(
-                "https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm"
-            )
-        ).default;
-
-    const zip =
-        await JSZip.loadAsync(
-            buffer
-        );
-
-    async function read(
-        filename
-    ) {
-
-        const file =
-            zip.file(filename);
-
-        if (!file) {
-            return [];
-        }
-
-        const text =
-            await file.async(
-                "string"
-            );
-
-        return parseCSV(text);
-    }
-
-    const [
-        routes,
-        trips,
-        shapes
-    ] =
-        await Promise.all([
-            read("routes.txt"),
-            read("trips.txt"),
-            read("shapes.txt")
-        ]);
-
-    staticData = {
-        routes,
-        trips,
-        shapes
-    };
-
-    return staticData;
-}
-
-
-/* ============================================================
-   GTFS STATIC → LINJE / SHAPE
-   ============================================================ */
-
-function getRouteFromTrip(
-    tripId
-) {
-
-    if (!staticData) {
-        return null;
-    }
-
-    const trip =
-        staticData.trips.find(
-            x =>
-                String(
-                    x.trip_id
-                ) ===
-                String(tripId)
-        );
-
-    if (!trip) {
-        return null;
-    }
-
-    const route =
-        staticData.routes.find(
-            x =>
-                String(
-                    x.route_id
-                ) ===
-                String(
-                    trip.route_id
-                )
-        );
-
-    return {
-        trip,
-        route
-    };
-}
-
-
-function getShape(
-    shapeId
-) {
-
-    if (!staticData) {
-        return [];
-    }
-
-    return staticData.shapes
-        .filter(
-            point =>
-                String(
-                    point.shape_id
-                ) ===
-                String(shapeId)
-        )
-        .sort(
-            (
-                a,
-                b
-            ) =>
-                Number(
-                    a.shape_pt_sequence
-                ) -
-                Number(
-                    b.shape_pt_sequence
-                )
-        )
-        .map(
-            point => [
-                Number(
-                    point.shape_pt_lat
-                ),
-                Number(
-                    point.shape_pt_lon
-                )
-            ]
-        )
-        .filter(
-            point =>
-                Number.isFinite(
-                    point[0]
-                ) &&
-                Number.isFinite(
-                    point[1]
-                )
-        );
-}
-
-
-/* ============================================================
-   VEHICLE MARKERS
-   ============================================================ */
-
-function vehicleIcon(
-    label,
-    metro
-) {
+function isMetro(leg) {
 
     const text =
-        String(label || "•")
-            .slice(0, 4);
+        transportType(leg);
 
-    return L.divIcon({
-        className: "",
-        html:
-            `<div class="vehicle-marker ${
-                metro
-                    ? "metro-marker"
-                    : ""
-            }">${
-                escapeHtml(text)
-            }</div>`,
+    return (
+        text.includes("metro") ||
+        text.includes("tunnel")
+    );
 
-        iconSize: [24, 24],
-
-        iconAnchor: [12, 12]
-    });
 }
 
 
-function updateVehicleMarkers(
-    vehicles,
-    relevantRouteIds
-) {
-
-    const wanted =
-        new Set(
-            relevantRouteIds
-                .filter(Boolean)
-                .map(
-                    String
-                )
-        );
-
-    const visible =
-        vehicles.filter(
-            vehicle =>
-                wanted.size === 0 ||
-                wanted.has(
-                    vehicle.routeId
-                )
-        );
-
-    const seen =
-        new Set();
-
-    for (
-        const vehicle of visible
-    ) {
-
-        seen.add(
-            vehicle.id
-        );
-
-        const staticInfo =
-            getRouteFromTrip(
-                vehicle.tripId
-            );
-
-        const route =
-            staticInfo?.route;
-
-        const isMetro =
-            Number(
-                route?.route_type
-            ) >= 400 &&
-            Number(
-                route?.route_type
-            ) <= 499;
-
-        const label =
-            route?.route_short_name ||
-            vehicle.label ||
-            "";
-
-        const latlng = [
-            vehicle.latitude,
-            vehicle.longitude
-        ];
-
-        if (
-            vehicleMarkers.has(
-                vehicle.id
-            )
-        ) {
-
-            const marker =
-                vehicleMarkers.get(
-                    vehicle.id
-                );
-
-            marker.setLatLng(
-                latlng
-            );
-
-            marker.setIcon(
-                vehicleIcon(
-                    label,
-                    isMetro
-                )
-            );
-
-        } else {
-
-            const marker =
-                L.marker(
-                    latlng,
-                    {
-                        icon:
-                            vehicleIcon(
-                                label,
-                                isMetro
-                            )
-                    }
-                )
-                .addTo(map);
-
-            marker.bindTooltip(
-                label
-                    ? `${label}${
-                        vehicle.label
-                            ? ` · ${vehicle.label}`
-                            : ""
-                    }`
-                    : "SL-fordon"
-            );
-
-            vehicleMarkers.set(
-                vehicle.id,
-                marker
-            );
-        }
-    }
+/* =====================================================
+   LEG SUMMARY
+===================================================== */
 
 
-    /*
-     * Ta bort fordon som inte längre finns
-     * i senaste feeden.
-     */
-    for (
-        const [
-            id,
-            marker
-        ] of vehicleMarkers
-    ) {
-
-        if (!seen.has(id)) {
-
-            map.removeLayer(
-                marker
-            );
-
-            vehicleMarkers.delete(
-                id
-            );
-        }
-    }
-
-
-    mapStatus.textContent =
-        `${visible.length} fordon i realtid`;
-}
-
-
-/* ============================================================
-   FÖRSÖK IDENTIFIERA LINJER
-   ============================================================ */
-
-function getJourneyLines(
-    trips
-) {
-
-    const lines = [];
-
-    for (
-        const trip of trips
-    ) {
-
-        for (
-            const leg of getLegs(trip)
-        ) {
-
-            if (!isJourney(leg)) {
-                continue;
-            }
-
-            const line =
-                getLine(leg);
-
-            if (
-                line &&
-                !lines.includes(line)
-            ) {
-                lines.push(line);
-            }
-        }
-    }
-
-    return lines;
-}
-
-
-function staticRouteIdsForLines(
-    lines
-) {
-
-    if (!staticData) {
-        return [];
-    }
-
-    return staticData.routes
-        .filter(
-            route =>
-                lines.includes(
-                    String(
-                        route.route_short_name
-                    )
-                )
-        )
-        .map(
-            route =>
-                String(
-                    route.route_id
-                )
-        );
-}
-
-
-/* ============================================================
-   RITA SHAPE FÖR RELEVANTA TRIPPAR
-   ============================================================ */
-
-function drawActualShapes(
-    realtimeVehicles,
-    lines
-) {
-
-    if (!staticData) {
-        return;
-    }
-
-    const relevantTripIds =
-        realtimeVehicles
-            .filter(
-                vehicle => {
-
-                    const info =
-                        getRouteFromTrip(
-                            vehicle.tripId
-                        );
-
-                    return (
-                        info?.route &&
-                        lines.includes(
-                            String(
-                                info.route
-                                    .route_short_name
-                            )
-                        );
-                    };
-                }
-            )
-            .map(
-                vehicle =>
-                    vehicle.tripId
-            );
-
-    /*
-     * Ta bort gamla shape-lager.
-     */
-    if (
-        window.__shapeLayers
-    ) {
-
-        for (
-            const layer of
-            window.__shapeLayers
-        ) {
-            map.removeLayer(
-                layer
-            );
-        }
-    }
-
-    window.__shapeLayers = [];
-
-    /*
-     * Rita max ett begränsat antal shapes
-     * så kartan inte blir överfull.
-     */
-    const uniqueTrips =
-        [...new Set(
-            relevantTripIds
-        )].slice(0, 8);
-
-    for (
-        const tripId of uniqueTrips
-    ) {
-
-        const info =
-            getRouteFromTrip(
-                tripId
-            );
-
-        if (!info?.trip) {
-            continue;
-        }
-
-        const points =
-            getShape(
-                info.trip.shape_id
-            );
-
-        if (
-            points.length < 2
-        ) {
-            continue;
-        }
-
-        const layer =
-            L.polyline(
-                points,
-                {
-                    weight: 3,
-                    opacity: .55
-                }
-            ).addTo(map);
-
-        window.__shapeLayers.push(
-            layer
-        );
-    }
-}
-
-
-/* ============================================================
-   VISA RESVÄGEN
-   ============================================================ */
-
-function renderTrip(
-    trip,
-    departures
-) {
+function journeySummary(trip) {
 
     const legs =
-        getLegs(trip);
+        trip.LegList?.Leg || [];
 
-    let html = "";
+    const products = [];
 
-    const journeyLegs =
-        legs.filter(
-            isJourney
-        );
 
-    if (
-        journeyLegs.length === 0
-    ) {
-        throw new Error(
-            "Resan saknar kollektivtrafik."
-        );
+    for (const leg of legs) {
+
+        if (
+            leg.type !== "JNY"
+        )
+            continue;
+
+
+        const line =
+            lineForLeg(leg);
+
+        if (!line)
+            continue;
+
+
+        products.push({
+
+            line,
+
+            metro:
+                isMetro(leg)
+
+        });
+
     }
 
 
-    for (
-        let i = 0;
-        i < journeyLegs.length;
-        i++
-    ) {
+    return products;
 
-        const leg =
-            journeyLegs[i];
-
-        const line =
-            getLine(leg);
-
-        const origin =
-            String(
-                leg?.Origin?.name ||
-                ""
-            );
-
-        const destination =
-            String(
-                leg?.Destination?.name ||
-                leg?.direction ||
-                ""
-            );
+}
 
 
-        /*
-         * Använd SL-realtid när det går.
-         */
-        const matchingDeparture =
-            departures.find(
-                item =>
-                    item.line === line &&
-                    normalize(
-                        item.origin
-                    ) ===
-                    normalize(origin)
-            );
+/* =====================================================
+   CREATE LIST ITEM
+===================================================== */
 
 
-        let timeHtml = "";
+function createJourneyCard(
+    trip,
+    index
+) {
 
-        if (
-            matchingDeparture
-        ) {
+    const origin =
+        trip.LegList?.Leg?.[0]
+            ?.Origin;
 
-            timeHtml =
-                formatMinutes(
-                    matchingDeparture.expected
-                );
 
-        } else {
+    const legs =
+        trip.LegList?.Leg || [];
 
-            const date =
-                leg?.Origin?.date;
 
-            const time =
-                leg?.Origin?.time;
+    const lastLeg =
+        legs[legs.length - 1];
 
-            if (
-                date &&
-                time
-            ) {
 
-                const timestamp =
-                    new Date(
-                        `${date}T${time}:00`
-                    ).toISOString();
+    const destination =
+        lastLeg?.Destination;
 
-                timeHtml =
-                    formatMinutes(
-                        timestamp
-                    );
+
+    if (
+        !origin ||
+        !destination
+    )
+        return null;
+
+
+    const duration =
+        durationMinutes(
+            origin,
+            destination
+        );
+
+
+    const products =
+        journeySummary(trip);
+
+
+    const card =
+        document.createElement(
+            "button"
+        );
+
+    card.className =
+        "journey";
+
+
+    let productHTML = "";
+
+
+    for (const product of products) {
+
+        productHTML += `
+            <span class="transport">
+
+                <span
+                    class="line ${
+                        product.metro
+                            ? "metro"
+                            : "bus"
+                    }"
+                >
+                    ${escapeHTML(product.line)}
+                </span>
+
+            </span>
+        `;
+
+    }
+
+
+    card.innerHTML = `
+
+        <div class="times">
+
+            <div class="time">
+                ${escapeHTML(origin.time)}
+            </div>
+
+            <div class="arrow">
+                →
+            </div>
+
+            <div class="time arrival">
+                ${escapeHTML(
+                    destination.time
+                )}
+            </div>
+
+        </div>
+
+
+        <div class="stations">
+
+            <div class="station">
+                ${escapeHTML(
+                    origin.name
+                )}
+            </div>
+
+            <div></div>
+
+            <div class="station arrival">
+                ${escapeHTML(
+                    destination.name
+                )}
+            </div>
+
+        </div>
+
+
+        <div class="summary">
+
+            ${productHTML}
+
+            ${
+                duration !== null
+                    ? `<span>·</span>
+                       <span>${duration} min</span>`
+                    : ""
             }
+
+        </div>
+    `;
+
+
+    card.addEventListener(
+        "click",
+        () => {
+            showDetail(
+                trip,
+                index
+            );
         }
+    );
 
 
-        html += `
-            <div class="trip-row">
+    return card;
+}
 
-                <div class="line">
-                    ${escapeHtml(line)}
-                </div>
 
-                <div class="destination">
-                    ${escapeHtml(
-                        destination
-                    )}
-                </div>
+/* =====================================================
+   RENDER LIST
+===================================================== */
 
-                <div class="time">
-                    ${timeHtml}
-                </div>
 
+function renderJourneys() {
+
+    const container =
+        document.getElementById(
+            "journeys"
+        );
+
+
+    container.innerHTML = "";
+
+
+    if (!journeys.length) {
+
+        container.innerHTML = `
+            <div class="error">
+                Inga resor hittades.
             </div>
         `;
 
+        return;
+    }
 
-        /*
-         * Byte mellan kollektivtrafikben.
-         */
-        if (
-            i <
-            journeyLegs.length - 1
-        ) {
 
-            const next =
-                journeyLegs[i + 1];
+    journeys.forEach(
+        (trip, index) => {
 
-            const transfer =
-                next?.Origin?.name ||
-                leg?.Destination?.name ||
-                "";
+            const card =
+                createJourneyCard(
+                    trip,
+                    index
+                );
+
+            if (card)
+                container.appendChild(
+                    card
+                );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   DETAIL VIEW
+===================================================== */
+
+
+function showDetail(
+    trip,
+    index
+) {
+
+    const list =
+        document.getElementById(
+            "list"
+        );
+
+    const detail =
+        document.getElementById(
+            "detail"
+        );
+
+
+    const title =
+        document.getElementById(
+            "detailTitle"
+        );
+
+
+    const content =
+        document.getElementById(
+            "detailContent"
+        );
+
+
+    const legs =
+        trip.LegList?.Leg || [];
+
+
+    const origin =
+        legs[0]?.Origin;
+
+
+    const destination =
+        legs[legs.length - 1]
+            ?.Destination;
+
+
+    title.textContent =
+        `${origin?.time || ""} → ${
+            destination?.time || ""
+        }`;
+
+
+    let html = "";
+
+
+    legs.forEach(
+        (leg, legIndex) => {
+
+            if (
+                leg.type === "TRSF"
+            ) {
+
+                html += `
+                    <div
+                        class="detail-transfer"
+                    >
+                        ${escapeHTML(
+                            leg.name ||
+                            "Byte"
+                        )}
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            if (
+                leg.type !== "JNY" &&
+                leg.type !== "WALK"
+            )
+                return;
+
+
+            const legOrigin =
+                leg.Origin;
+
+
+            const legDestination =
+                leg.Destination;
+
+
+            if (
+                !legOrigin ||
+                !legDestination
+            )
+                return;
+
+
+            const line =
+                lineForLeg(leg);
+
+
+            let vehicle = "";
+
+
+            if (
+                leg.type === "JNY"
+            ) {
+
+                const direction =
+                    leg.direction || "";
+
+
+                vehicle =
+                    `${line ? "Linje " + escapeHTML(line) : ""}${
+                        direction
+                            ? " · mot " +
+                              escapeHTML(direction)
+                            : ""
+                    }`;
+
+            }
+            else {
+
+                vehicle =
+                    "Gång";
+
+            }
+
+
+            const green =
+                isMetro(leg);
+
 
             html += `
-                <div class="transfer">
-                    Byte vid
-                    ${escapeHtml(
-                        transfer
-                    )}
-                    <span class="arrow">
-                        →
-                    </span>
-                    ${escapeHtml(
-                        getLine(next)
-                    )}
+
+                <div
+                    class="detail-leg"
+                >
+
+                    <div
+                        class="detail-times"
+                    >
+
+                        <div>
+                            ${escapeHTML(
+                                legOrigin.time
+                            )}
+                        </div>
+
+                        <div
+                            style="
+                                margin-top:58px;
+                            "
+                        >
+                            ${escapeHTML(
+                                legDestination.time
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="detail-line"
+                        style="
+                            --detail-color:
+                            ${
+                                green
+                                    ? "#20a957"
+                                    : "#59616a"
+                            };
+                        "
+                    >
+
+                        <div
+                            class="detail-dot"
+                            style="
+                                border-color:
+                                ${
+                                    green
+                                        ? "#20a957"
+                                        : "white"
+                                };
+                            "
+                        ></div>
+
+
+                        <div
+                            class="detail-dot"
+                            style="
+                                border-color:
+                                ${
+                                    green
+                                        ? "#20a957"
+                                        : "white"
+                                };
+                            "
+                        ></div>
+
+                    </div>
+
+
+                    <div
+                        class="detail-info"
+                    >
+
+                        <div
+                            class="detail-stop"
+                        >
+                            ${escapeHTML(
+                                legOrigin.name
+                            )}
+                        </div>
+
+
+                        <div
+                            class="detail-vehicle"
+                        >
+                            ${vehicle}
+                        </div>
+
+
+                        <div
+                            style="
+                                margin-top:55px;
+                            "
+                            class="detail-stop"
+                        >
+                            ${escapeHTML(
+                                legDestination.name
+                            )}
+                        </div>
+
+                    </div>
+
                 </div>
             `;
         }
-    }
+    );
 
 
-    contentRows.innerHTML =
+    content.innerHTML =
         html;
 
 
-    routeSummary.textContent =
-        journeyLegs
-            .map(
-                leg =>
-                    `${getLine(leg)} ${
-                        leg?.Destination?.name || ""
-                    }`
-            )
-            .join(" → ");
-}
+    list.classList.add(
+        "hidden"
+    );
+
+    detail.classList.add(
+        "visible"
+    );
 
 
-/* ============================================================
-   HÄMTA SL-AVGÅNGAR FÖR HELA RUTTEN
-   ============================================================ */
-
-async function loadRelevantDepartures(
-    trip
-) {
-
-    const legs =
-        getLegs(trip)
-            .filter(
-                isJourney
-            );
-
-    const result = [];
-
-    /*
-     * Västergöksvägen → första bussen
-     */
-    const originData =
-        await getDepartures(
-            STOPS.origin.id
-        );
-
-
-    /*
-     * Vällingby → tunnelbana
-     */
-    const transferData =
-        await getDepartures(
-            STOPS.transfer.id
-        );
-
-
-    for (
-        const leg of legs
-    ) {
-
-        const line =
-            getLine(leg);
-
-        const origin =
-            String(
-                leg?.Origin?.name ||
-                ""
-            );
-
-        const source =
-            normalize(origin)
-                .includes(
-                    normalize(
-                        STOPS.transfer.name
-                    )
-                )
-                ? transferData
-                : originData;
-
-
-        const dep =
-            findLineDeparture(
-                source?.departures || [],
-                line
-            );
-
-        if (!dep) {
-            continue;
+    window.scrollTo(
+        {
+            top: 0,
+            behavior: "smooth"
         }
+    );
 
-        result.push({
-            line,
-
-            origin,
-
-            destination:
-                getDepartureDestination(
-                    dep
-                ),
-
-            expected:
-                getDepartureExpected(
-                    dep
-                )
-        });
-    }
-
-    return result;
 }
 
 
-/* ============================================================
-   REALTIME LOOP
-   ============================================================ */
-
-let currentLines = [];
-
-let currentRouteIds = [];
-
-let latestVehicles = [];
+/* =====================================================
+   BACK
+===================================================== */
 
 
-async function updateRealtime() {
+document
+    .getElementById("back")
+    .addEventListener(
+        "click",
+        () => {
+
+            document
+                .getElementById("detail")
+                .classList.remove(
+                    "visible"
+                );
+
+            document
+                .getElementById("list")
+                .classList.remove(
+                    "hidden"
+                );
+
+        }
+    );
+
+
+/* =====================================================
+   LOAD RESROBOT
+===================================================== */
+
+
+async function loadJourneys() {
+
+    const container =
+        document.getElementById(
+            "journeys"
+        );
+
 
     try {
 
-        /*
-         * VehiclePositions.
-         */
-        const vehicleFeed =
-            await fetchRealtimeFeed(
-                "VehiclePositions"
-            );
-
-        latestVehicles =
-            extractVehiclePositions(
-                vehicleFeed
+        const response =
+            await fetch(
+                WORKER +
+                "/resrobot/trips"
             );
 
 
-        /*
-         * Visa relevanta fordon.
-         */
-        updateVehicleMarkers(
-            latestVehicles,
-            currentRouteIds
-        );
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        journeys =
+            data.TripList?.Trip ||
+            [];
 
 
         /*
-         * Om static-data finns kan vi rita
-         * den faktiska GTFS-shapen.
+         * If ResRobot returns only one
+         * object instead of an array.
          */
-        drawActualShapes(
-            latestVehicles,
-            currentLines
-        );
+
+        if (
+            !Array.isArray(journeys) &&
+            journeys
+        ) {
+
+            journeys = [
+                journeys
+            ];
+
+        }
+
+
+        renderJourneys();
+
 
     } catch (error) {
 
         console.error(
-            "GTFS-RT:",
             error
         );
 
-        mapStatus.textContent =
-            "GPS-data kunde inte hämtas";
+
+        container.innerHTML = `
+
+            <div class="error">
+
+                <strong>
+                    Kunde inte hämta resor
+                </strong>
+
+                <br><br>
+
+                ${escapeHTML(
+                    error.message
+                )}
+
+            </div>
+
+        `;
+
     }
+
 }
 
 
-/* ============================================================
-   HUVUDPROGRAM
-   ============================================================ */
-
-async function main() {
-
-    if (
-        !RESROBOT_KEY ||
-        RESROBOT_KEY ===
-            "PASTE_YOUR_RESROBOT_KEY_HERE"
-    ) {
-
-        throw new Error(
-            "Fyll i ResRobot API-nyckeln längst upp."
-        );
-    }
-
-
-    /*
-     * 1. Ladda SL Site-data.
-     */
-    await loadSLStopData();
-
-    drawStopMarkers();
-
-
-    /*
-     * 2. Ladda GTFS-RT decoder.
-     */
-    await loadGTFSRealtimeLibrary();
-
-
-    /*
-     * 3. Försök ladda GTFS static.
-     *
-     * Detta behövs för:
-     * route_id → linjenummer
-     * trip_id → shape
-     *
-     * Om nyckeln saknar static-behörighet
-     * fortsätter widgeten ändå.
-     */
-    try {
-
-        await loadStaticGTFS();
-
-    } catch (error) {
-
-        console.warn(
-            "GTFS static kunde inte laddas:",
-            error
-        );
-
-        staticData = null;
-    }
-
-
-    /*
-     * 4. Hämta resealternativ.
-     */
-    const trips =
-        await getResRobotTrip();
-
-
-    /*
-     * Välj första användbara resan.
-     */
-    const trip =
-        trips.find(
-            candidate =>
-                getLegs(candidate)
-                    .some(isJourney)
-        );
-
-    if (!trip) {
-        throw new Error(
-            "Ingen användbar resa hittades."
-        );
-    }
-
-
-    /*
-     * 5. Hämta aktuella SL-avgångar.
-     */
-    let departures = [];
-
-    try {
-
-        departures =
-            await loadRelevantDepartures(
-                trip
-            );
-
-    } catch (error) {
-
-        console.warn(
-            "SL realtid:",
-            error
-        );
-    }
-
-
-    /*
-     * 6. Visa rutten.
-     */
-    renderTrip(
-        trip,
-        departures
-    );
-
-
-    /*
-     * 7. Identifiera relevanta linjer.
-     */
-    currentLines =
-        getJourneyLines(
-            [trip]
-        );
-
-
-    /*
-     * 8. Matcha route_id från GTFS static.
-     */
-    currentRouteIds =
-        staticRouteIdsForLines(
-            currentLines
-        );
-
-
-    /*
-     * 9. Hämta GPS-positioner.
-     */
-    await updateRealtime();
-
-
-    /*
-     * 10. Uppdatera GPS ungefär var 5:e sekund.
-     */
-    setInterval(
-        updateRealtime,
-        5000
-    );
-
-
-    /*
-     * 11. Uppdatera avgångarna varje 15:e sekund.
-     */
-    setInterval(
-        async () => {
-
-            try {
-
-                const fresh =
-                    await loadRelevantDepartures(
-                        trip
-                    );
-
-                renderTrip(
-                    trip,
-                    fresh
-                );
-
-            } catch (error) {
-
-                console.warn(
-                    "Avgångsuppdatering:",
-                    error
-                );
-            }
-
-        },
-        15000
-    );
-}
-
-
-/* ============================================================
-   START
-   ============================================================ */
-
-main()
-    .catch(
-        error => {
-
-            console.error(
-                "Widget:",
-                error
-            );
-
-            contentRows.innerHTML = `
-                <div class="error">
-                    ${escapeHtml(
-                        error?.message ||
-                        "Okänt fel"
-                    )}
-                </div>
-            `;
-
-            routeSummary.textContent =
-                "Kunde inte bygga resvägen.";
-
-            mapStatus.textContent =
-                "Ingen realtidsdata";
-        }
-    );
+loadJourneys();
 
 
 /*
- * WidgetWeb.
+ * Refresh the home screen every minute.
+ *
+ * ResRobot's route planner is intended
+ * for this type of route-planning use.
  */
-window.addEventListener(
-    "load",
-    () => {
 
-        if (
-            typeof window.WidgetWeb !==
-            "undefined" &&
-            typeof window.WidgetWeb.ready ===
-            "function"
-        ) {
-            window.WidgetWeb.ready();
-        }
-    }
+setInterval(
+    loadJourneys,
+    60 * 1000
 );
 
 </script>
