@@ -41,6 +41,18 @@ html, body {
 }
 
 /* ==========================================================================
+   UPDATED STATUS TIMESTAMP
+   ========================================================================== */
+.update-status {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-subtle);
+    margin-bottom: 14px;
+    font-weight: 500;
+    letter-spacing: -0.1px;
+}
+
+/* ==========================================================================
    LIST SCREEN (DEFAULT VIEW)
    ========================================================================== */
 .list-container {
@@ -506,6 +518,9 @@ html, body {
 
 <div class="screen-wrapper">
 
+    <!-- STATUS TEXT (HUR LÄNGE SEN DET UPPDATERADES) -->
+    <div id="updateStatus" class="update-status"></div>
+
     <!-- ================= LIST VIEW ================= -->
     <main id="listView" class="list-view">
         <div id="journeysList" class="list-container">
@@ -536,6 +551,28 @@ html, body {
 <script>
 const WORKER = "https://sl-transit-proxy.haxxerlikeshaxx.workers.dev";
 let cachedJourneys = [];
+let lastUpdatedTime = null;
+
+/* TIME AGO HELPER */
+function updateStatusText() {
+    const el = document.getElementById("updateStatus");
+    if (!lastUpdatedTime) {
+        el.textContent = "";
+        return;
+    }
+    const seconds = Math.floor((new Date() - lastUpdatedTime) / 1000);
+    if (seconds < 20) {
+        el.textContent = "Uppdaterades nyss";
+    } else if (seconds < 60) {
+        el.textContent = "Uppdaterades för under 1 min sedan";
+    } else {
+        const mins = Math.floor(seconds / 60);
+        el.textContent = `Uppdaterades för ${mins} min sedan`;
+    }
+}
+
+// Kör status-text uppdatering varje 10 sekunder
+setInterval(updateStatusText, 10000);
 
 /* HELPERS */
 function cleanStationName(name) {
@@ -585,7 +622,6 @@ function checkIfMetro(leg) {
     return cat.includes("metro") || cat.includes("tunnel") || cat.includes("ult");
 }
 
-/* SPECIFIC LINE COLOR CLASSIFIER */
 function getLineColorClass(leg) {
     if (checkIfMetro(leg)) return "metro";
     const line = String(getLineNumber(leg)).trim();
@@ -593,7 +629,6 @@ function getLineColorClass(leg) {
     return "bus-blue";
 }
 
-/* FILTER BUGS: REMOVE TRIVIAL / DUPLICATE START WALKS */
 function sanitizeLegs(legs) {
     return legs.filter((leg, idx) => {
         if (leg.type === "WALK") {
@@ -697,7 +732,6 @@ function renderDetail(trip) {
         const arrTime = cleanTime(destination?.time);
         const legDur = calculateDuration(`${origin.date}T${origin.time}`, `${destination.date}T${destination.time}`);
 
-        /* 1. TRANSFER HEADER BEFORE CARD */
         if (idx > 0) {
             const prevLeg = legs[idx - 1];
             const prevArrTime = prevLeg.Destination?.time;
@@ -716,7 +750,6 @@ function renderDetail(trip) {
             `;
         }
 
-        /* 2. WALKING LEG */
         if (leg.type === "WALK") {
             const distMeters = leg.dist || 240;
             html += `
@@ -746,13 +779,11 @@ function renderDetail(trip) {
             return;
         }
 
-        /* 3. BUS / METRO TRANSIT CARD */
         const isMetro = checkIfMetro(leg);
         const line = getLineNumber(leg);
         const colorClass = getLineColorClass(leg);
         const direction = leg.direction ? cleanStationName(leg.direction) : "";
 
-        // Intermediate stops
         const allStops = leg.Stops?.Stop || [];
         const middleStops = allStops.slice(1, allStops.length - 1);
         let intermediateHTML = "";
@@ -781,7 +812,6 @@ function renderDetail(trip) {
 
         html += `
             <div class="card-block">
-                <!-- Top Right Pill -->
                 <div class="card-corner-badge ${colorClass}">
                     <div class="corner-icon-box">
                         ${isMetro ? 
@@ -792,7 +822,6 @@ function renderDetail(trip) {
                     <div class="corner-number-box">${escapeHTML(line)}</div>
                 </div>
 
-                <!-- 3-Column Timeline -->
                 <div class="timeline-row">
                     <div class="time-column">
                         <span class="dep-time">${depTime}</span>
@@ -861,6 +890,10 @@ async function fetchJourneys() {
         const data = await res.json();
         cachedJourneys = data.Trip || data.TripList?.Trip || [];
         if (!Array.isArray(cachedJourneys) && cachedJourneys) cachedJourneys = [cachedJourneys];
+
+        // Spara aktuell tid och uppdatera status
+        lastUpdatedTime = new Date();
+        updateStatusText();
 
         renderList();
     } catch (err) {
