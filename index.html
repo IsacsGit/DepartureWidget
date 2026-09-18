@@ -2,855 +2,388 @@
 <html lang="sv">
 
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>
-Västergöksvägen → Blackeberg
-</title>
-
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Västergöksvägen → Blackeberg</title>
 <style>
-
 * {
     box-sizing: border-box;
 }
 
-
 :root {
-
-    --background: #101318;
-
-    --surface: #1d2228;
-
-    --surface-hover: #272d34;
-
-    --text: #f5f6f7;
-
-    --secondary: #aeb4bb;
-
-    --muted: #737981;
-
-    --accent: #28a9ed;
-
-    --green: #20a957;
-
-    --divider: #30363e;
+    --bg-color: #0b0e14;
+    --card-bg: #161b22;
+    --card-hover: #1f2630;
+    --text-primary: #f0f6fc;
+    --text-secondary: #8b949e;
+    --border-color: #30363d;
+    --accent: #2f81f7;
+    --green-metro: #238636;
+    --bus-color: #1f242c;
+    --walk-color: #30363d;
 }
 
-
-html,
-body {
-
+html, body {
     margin: 0;
-
     min-height: 100%;
-
-    background:
-        var(--background);
-
-    color:
-        var(--text);
-
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Arial,
-        sans-serif;
+    background: var(--bg-color);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
-
-
-body {
-
-    min-height: 100vh;
-
-}
-
 
 .app {
-
     width: 100%;
-
-    max-width: 760px;
-
+    max-width: 600px;
     margin: auto;
-
     min-height: 100vh;
-
-    padding-bottom: 30px;
-
+    padding-bottom: 40px;
 }
 
-
-/* =====================================================
-   HEADER
-===================================================== */
-
+/* HEADER */
 .header {
-
     position: sticky;
-
     top: 0;
-
     z-index: 20;
-
-    background:
-        rgba(16,19,24,0.94);
-
-    backdrop-filter:
-        blur(18px);
-
-    padding:
-        25px 22px 20px;
-
-    border-bottom:
-        1px solid rgba(255,255,255,0.04);
-
+    background: rgba(11, 14, 20, 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
 }
 
-
-.title {
-
-    font-size: 25px;
-
-    font-weight: 750;
-
-    letter-spacing:
-        -0.4px;
-
+.route-header-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 19px;
+    font-weight: 700;
 }
 
-
-.subtitle {
-
-    margin-top: 5px;
-
-    color:
-        var(--secondary);
-
-    font-size: 14px;
-
+.route-header-title .arrow {
+    color: var(--accent);
 }
 
+.route-header-sub {
+    margin-top: 4px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+}
 
-/* =====================================================
-   JOURNEY LIST
-===================================================== */
-
+/* LIST CONTAINER */
 .journeys {
-
-    padding:
-        12px 14px;
-
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-
-.journey {
-
-    width: 100%;
-
-    border: none;
-
-    background:
-        var(--surface);
-
-    color:
-        var(--text);
-
-    border-radius:
-        22px;
-
-    padding:
-        19px 18px;
-
-    margin-bottom:
-        9px;
-
-    text-align:
-        left;
-
-    cursor:
-        pointer;
-
-    transition:
-        background 0.15s,
-        transform 0.1s;
-
+/* JOURNEY CARD */
+.journey-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 }
 
-
-.journey:hover {
-
-    background:
-        var(--surface-hover);
-
+.journey-card:hover {
+    background: var(--card-hover);
+    border-color: var(--text-secondary);
 }
 
-
-.journey:active {
-
-    transform:
-        scale(0.99);
-
+.journey-main-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
 }
 
-
-/* =====================================================
-   TIMES
-===================================================== */
-
-.times {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        1fr
-        28px
-        1fr;
-
-    align-items:
-        center;
-
+.time-cluster {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
 }
 
-
-.time {
-
-    font-size:
-        28px;
-
-    font-weight:
-        750;
-
-    line-height:
-        1;
-
+.time-main {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
 }
 
-
-.time.arrival {
-
-    text-align:
-        right;
-
+.time-divider {
+    color: var(--text-secondary);
+    font-weight: 600;
 }
 
-
-.arrow {
-
-    text-align:
-        center;
-
-    color:
-        var(--secondary);
-
-    font-size:
-        20px;
-
+.journey-pills-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
 }
 
-
-/* =====================================================
-   STATIONS
-===================================================== */
-
-.stations {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        1fr
-        28px
-        1fr;
-
-    margin-top:
-        8px;
-
+/* BADGES / PILLS */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
 }
 
-
-.station {
-
-    color:
-        var(--secondary);
-
-    font-size:
-        14px;
-
+.badge.bus {
+    background: #2b313b;
+    color: #f0f6fc;
 }
 
-
-.station.arrival {
-
-    text-align:
-        right;
-
+.badge.metro {
+    background: #116329;
+    color: #ffffff;
 }
 
-
-/* =====================================================
-   SUMMARY
-===================================================== */
-
-.summary {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        8px;
-
-    margin-top:
-        15px;
-
-    color:
-        var(--secondary);
-
-    font-size:
-        13px;
-
+.badge.walk {
+    background: #30363d;
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
-
-.transport {
-
-    display:
-        inline-flex;
-
-    align-items:
-        center;
-
-    gap:
-        5px;
-
+.journey-meta-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+    font-size: 13px;
+    color: var(--text-secondary);
 }
 
-
-.line {
-
-    display:
-        inline-flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    min-width:
-        26px;
-
-    height:
-        24px;
-
-    padding:
-        0 7px;
-
-    border-radius:
-        5px;
-
-    color:
-        white;
-
-    font-weight:
-        750;
-
-    font-size:
-        13px;
-
+.stations-summary {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70%;
 }
 
-
-.line.bus {
-
-    background:
-        #080a0d;
-
+.duration-tag {
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
-
-.line.metro {
-
-    background:
-        var(--green);
-
-}
-
-
-/* =====================================================
-   LOADING
-===================================================== */
-
+/* LOADING & ERROR */
 .loading {
-
-    padding:
-        45px 20px;
-
-    text-align:
-        center;
-
-    color:
-        var(--secondary);
-
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-secondary);
 }
-
 
 .spinner {
-
-    width:
-        26px;
-
-    height:
-        26px;
-
-    margin:
-        0 auto 15px;
-
-    border:
-        3px solid #343a41;
-
-    border-top-color:
-        var(--accent);
-
-    border-radius:
-        50%;
-
-    animation:
-        spin 0.8s linear infinite;
-
+    width: 28px;
+    height: 28px;
+    margin: 0 auto 14px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
 }
-
 
 @keyframes spin {
-
-    to {
-
-        transform:
-            rotate(360deg);
-
-    }
-
+    to { transform: rotate(360deg); }
 }
-
-
-/* =====================================================
-   ERROR
-===================================================== */
 
 .error {
-
-    margin:
-        20px 14px;
-
-    padding:
-        20px;
-
-    border-radius:
-        18px;
-
-    background:
-        #261b1d;
-
-    color:
-        #ffb8bd;
-
+    margin: 20px 16px;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(248, 81, 73, 0.1);
+    border: 1px solid rgba(248, 81, 73, 0.3);
+    color: #ff7b72;
+    font-size: 14px;
 }
 
-
-/* =====================================================
-   DETAIL VIEW
-===================================================== */
-
+/* DETAIL VIEW */
 .detail {
-
-    display:
-        none;
-
+    display: none;
+    padding: 16px;
 }
-
 
 .detail.visible {
-
-    display:
-        block;
-
+    display: block;
 }
-
 
 .list.hidden {
-
-    display:
-        none;
-
+    display: none;
 }
 
-
-.back {
-
-    border: none;
-
-    background: transparent;
-
-    color:
-        var(--accent);
-
-    font-size:
-        17px;
-
-    font-weight:
-        600;
-
-    padding:
-        0;
-
-    margin-bottom:
-        20px;
-
-    cursor:
-        pointer;
-
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    cursor: pointer;
 }
 
-
-.detail-title {
-
-    font-size:
-        25px;
-
-    font-weight:
-        750;
-
-    margin-bottom:
-        25px;
-
+.back-btn:hover {
+    background: var(--card-hover);
 }
 
-
-.detail-leg {
-
-    position:
-        relative;
-
-    display:
-        grid;
-
-    grid-template-columns:
-        64px
-        25px
-        1fr;
-
-    min-height:
-        105px;
-
+.detail-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
 }
 
-
-.detail-times {
-
-    font-size:
-        19px;
-
-    font-weight:
-        700;
-
+.detail-top-title {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 2px;
 }
 
-
-.detail-line {
-
-    position:
-        relative;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    flex-direction:
-        column;
-
+.detail-top-sub {
+    font-size: 13px;
+    color: var(--text-secondary);
 }
 
-
-.detail-line::before {
-
-    content:
-        "";
-
-    position:
-        absolute;
-
-    top:
-        8px;
-
-    bottom:
-        8px;
-
-    left:
-        50%;
-
-    width:
-        4px;
-
-    transform:
-        translateX(-50%);
-
-    background:
-        #555c64;
-
-    border-radius:
-        5px;
-
+/* TIMELINE TREE */
+.timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-
-.detail-dot {
-
-    width:
-        14px;
-
-    height:
-        14px;
-
-    border-radius:
-        50%;
-
-    background:
-        var(--background);
-
-    border:
-        4px solid white;
-
-    z-index:
-        2;
-
+.timeline-step {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 14px;
 }
 
-
-.detail-info {
-
-    padding-left:
-        12px;
-
+.step-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
 }
 
-
-.detail-stop {
-
-    font-size:
-        19px;
-
-    font-weight:
-        700;
-
+.step-time {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
 }
 
-
-.detail-vehicle {
-
-    margin-top:
-        8px;
-
-    color:
-        var(--secondary);
-
-    font-size:
-        14px;
-
+.step-details {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.04);
 }
 
-
-.detail-transfer {
-
-    padding:
-        13px 0 18px 89px;
-
-    color:
-        var(--secondary);
-
-    font-size:
-        14px;
-
+.transfer-info-box {
+    padding: 8px 12px;
+    background: rgba(47, 129, 247, 0.1);
+    border-left: 3px solid var(--accent);
+    color: var(--text-primary);
+    font-size: 13px;
+    border-radius: 0 8px 8px 0;
+    margin: 4px 0;
 }
-
 
 .detail-footer {
-
-    margin-top:
-        15px;
-
-    color:
-        var(--muted);
-
-    font-size:
-        12px;
-
+    margin-top: 24px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    text-align: center;
+    line-height: 1.4;
 }
-
-
-/* =====================================================
-   MOBILE
-===================================================== */
-
-@media (max-width: 600px) {
-
-    .title {
-
-        font-size:
-            22px;
-
-    }
-
-
-    .journey {
-
-        border-radius:
-            19px;
-
-    }
-
-
-    .time {
-
-        font-size:
-            25px;
-
-    }
-
-}
-
 </style>
-
 </head>
-
 
 <body>
 
-
 <div class="app">
 
-
     <!-- HEADER -->
-
     <header class="header">
-
-        <div class="title">
-
-            Västergöksvägen
-            <span style="color:#737981">→</span>
-            Blackeberg
-
+        <div class="route-header-title">
+            <span>Västergöksvägen</span>
+            <span class="arrow">→</span>
+            <span>Blackeberg</span>
         </div>
-
-        <div class="subtitle">
-
-            Nästa resor
-
-        </div>
-
+        <div class="route-header-sub">Realtid & Reseplanerare</div>
     </header>
 
-
-    <!-- LIST -->
-
-    <main
-        id="list"
-        class="list"
-    >
-
-        <div
-            id="journeys"
-            class="journeys"
-        >
-
+    <!-- LIST VIEW -->
+    <main id="list" class="list">
+        <div id="journeys" class="journeys">
             <div class="loading">
-
                 <div class="spinner"></div>
-
-                Hämtar resor...
-
+                Söker efter optimala resor...
             </div>
-
         </div>
-
     </main>
 
+    <!-- DETAIL VIEW -->
+    <main id="detail" class="detail">
+        <button id="back" class="back-btn">
+            ← Alla avgångar
+        </button>
 
-    <!-- DETAIL -->
-
-    <main
-        id="detail"
-        class="detail"
-    >
-
-        <div
-            style="
-                padding:25px 20px;
-            "
-        >
-
-            <button
-                id="back"
-                class="back"
-            >
-                ← Alla resor
-            </button>
-
-            <div
-                id="detailTitle"
-                class="detail-title"
-            ></div>
-
-            <div
-                id="detailContent"
-            ></div>
-
-            <div
-                class="detail-footer"
-            >
-                Resan hämtas från ResRobot.
-                Trafikläget kan ändras efter
-                att resan planerats.
-            </div>
-
+        <div class="detail-card">
+            <div id="detailTitle" class="detail-top-title">Resedetaljer</div>
+            <div id="detailSubtitle" class="detail-top-sub">Stopp och byten</div>
         </div>
 
-    </main>
+        <div id="detailContent" class="timeline-list"></div>
 
+        <div class="detail-footer">
+            Trafikuppgifter levereras via ResRobot.
+        </div>
+    </main>
 
 </div>
 
-
 <script>
-
-
-const WORKER =
-    "https://sl-transit-proxy.haxxerlikeshaxx.workers.dev";
-
-
+const WORKER = "https://sl-transit-proxy.haxxerlikeshaxx.workers.dev";
 let journeys = [];
 
+function cleanName(name) {
+    if (!name) return "";
+    return name.replace(/\s*\(Stockholm kn\)/gi, "").trim();
+}
 
-/* =====================================================
-   HELPERS
-===================================================== */
-
+function formatTime(timeStr) {
+    if (!timeStr) return "";
+    // Truncate seconds if format is HH:MM:SS
+    const parts = timeStr.split(":");
+    if (parts.length >= 2) {
+        return `${parts[0]}:${parts[1]}`;
+    }
+    return timeStr;
+}
 
 function escapeHTML(value) {
-
     return String(value ?? "")
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
@@ -859,754 +392,228 @@ function escapeHTML(value) {
         .replaceAll("'", "&#039;");
 }
 
-
-function timeValue(date, time) {
-
-    if (!date || !time)
+function calcDurationMinutes(startDateTimeStr, endDateTimeStr) {
+    try {
+        const start = new Date(startDateTimeStr);
+        const end = new Date(endDateTimeStr);
+        const diff = Math.round((end - start) / 60000);
+        return isNaN(diff) ? null : diff;
+    } catch {
         return null;
-
-    return new Date(
-        `${date}T${time}:00`
-    );
-
+    }
 }
-
-
-function durationMinutes(start, end) {
-
-    const a =
-        timeValue(
-            start.date,
-            start.time
-        );
-
-    const b =
-        timeValue(
-            end.date,
-            end.time
-        );
-
-    if (!a || !b)
-        return null;
-
-    return Math.round(
-        (b - a) / 60000
-    );
-
-}
-
-
-/* =====================================================
-   PRODUCT
-===================================================== */
-
 
 function productForLeg(leg) {
-
-    const product =
-        Array.isArray(leg.Product)
-            ? leg.Product[0]
-            : leg.Product;
-
-    if (!product)
-        return null;
-
-    return product;
+    return Array.isArray(leg.Product) ? leg.Product[0] : leg.Product;
 }
-
 
 function lineForLeg(leg) {
-
-    const product =
-        productForLeg(leg);
-
-    if (!product)
-        return "";
-
-
-    return (
-        product.num ||
-        product.line ||
-        product.name ||
-        ""
-    );
-
+    const p = productForLeg(leg);
+    if (!p) return "";
+    return p.num || p.line || p.name || "";
 }
-
-
-function transportType(leg) {
-
-    const product =
-        productForLeg(leg);
-
-    if (!product)
-        return "";
-
-
-    return (
-        product.catOutS ||
-        product.catOut ||
-        product.cat ||
-        product.name ||
-        ""
-    ).toLowerCase();
-
-}
-
 
 function isMetro(leg) {
-
-    const text =
-        transportType(leg);
-
-    return (
-        text.includes("metro") ||
-        text.includes("tunnel")
-    );
-
+    const p = productForLeg(leg);
+    const text = (p?.catOutS || p?.catOut || p?.cat || p?.name || "").toLowerCase();
+    return text.includes("metro") || text.includes("tunnel") || text.includes("ult");
 }
 
+/* CREATE MAIN CARD */
+function createJourneyCard(trip) {
+    const legs = trip.LegList?.Leg || [];
+    const firstLeg = legs[0];
+    const lastLeg = legs[legs.length - 1];
 
-/* =====================================================
-   LEG SUMMARY
-===================================================== */
+    if (!firstLeg || !lastLeg) return null;
 
+    const origin = firstLeg.Origin;
+    const destination = lastLeg.Destination;
 
-function journeySummary(trip) {
+    const startTime = formatTime(origin.time);
+    const endTime = formatTime(destination.time);
 
-    const legs =
-        trip.LegList?.Leg || [];
+    const startDateTime = `${origin.date || new Date().toISOString().split('T')[0]}T${origin.time}`;
+    const endDateTime = `${destination.date || new Date().toISOString().split('T')[0]}T${destination.time}`;
+    const totalDuration = calcDurationMinutes(startDateTime, endDateTime);
 
-    const products = [];
+    let pillsHTML = "";
+    let validLegs = legs.filter(l => l.type === "JNY" || l.type === "WALK");
 
+    validLegs.forEach((leg) => {
+        if (leg.type === "WALK") {
+            const walkSec = parseInt(leg.duration?.replace(/\D/g,'')) || 180;
+            const walkMin = Math.max(1, Math.round(walkSec / 60));
+            pillsHTML += `<span class="badge walk">Gå (${walkMin} min)</span>`;
+        } else {
+            const line = lineForLeg(leg);
+            const metro = isMetro(leg);
+            const typeName = metro ? "T" : "Buss";
+            pillsHTML += `<span class="badge ${metro ? 'metro' : 'bus'}">${typeName} ${escapeHTML(line)}</span>`;
+        }
+    });
 
-    for (const leg of legs) {
-
-        if (
-            leg.type !== "JNY"
-        )
-            continue;
-
-
-        const line =
-            lineForLeg(leg);
-
-        if (!line)
-            continue;
-
-
-        products.push({
-
-            line,
-
-            metro:
-                isMetro(leg)
-
-        });
-
-    }
-
-
-    return products;
-
-}
-
-
-/* =====================================================
-   CREATE LIST ITEM
-===================================================== */
-
-
-function createJourneyCard(
-    trip,
-    index
-) {
-
-    const origin =
-        trip.LegList?.Leg?.[0]
-            ?.Origin;
-
-
-    const legs =
-        trip.LegList?.Leg || [];
-
-
-    const lastLeg =
-        legs[legs.length - 1];
-
-
-    const destination =
-        lastLeg?.Destination;
-
-
-    if (
-        !origin ||
-        !destination
-    )
-        return null;
-
-
-    const duration =
-        durationMinutes(
-            origin,
-            destination
-        );
-
-
-    const products =
-        journeySummary(trip);
-
-
-    const card =
-        document.createElement(
-            "button"
-        );
-
-    card.className =
-        "journey";
-
-
-    let productHTML = "";
-
-
-    for (const product of products) {
-
-        productHTML += `
-            <span class="transport">
-
-                <span
-                    class="line ${
-                        product.metro
-                            ? "metro"
-                            : "bus"
-                    }"
-                >
-                    ${escapeHTML(product.line)}
-                </span>
-
-            </span>
-        `;
-
-    }
-
-
+    const card = document.createElement("div");
+    card.className = "journey-card";
     card.innerHTML = `
-
-        <div class="times">
-
-            <div class="time">
-                ${escapeHTML(origin.time)}
+        <div class="journey-main-row">
+            <div class="time-cluster">
+                <span class="time-main">${startTime}</span>
+                <span class="time-divider">→</span>
+                <span class="time-main">${endTime}</span>
             </div>
-
-            <div class="arrow">
-                →
+            <div class="duration-tag">
+                ${totalDuration !== null ? totalDuration + ' min' : ''}
             </div>
-
-            <div class="time arrival">
-                ${escapeHTML(
-                    destination.time
-                )}
-            </div>
-
         </div>
 
-
-        <div class="stations">
-
-            <div class="station">
-                ${escapeHTML(
-                    origin.name
-                )}
-            </div>
-
-            <div></div>
-
-            <div class="station arrival">
-                ${escapeHTML(
-                    destination.name
-                )}
-            </div>
-
+        <div class="journey-pills-row">
+            ${pillsHTML}
         </div>
 
-
-        <div class="summary">
-
-            ${productHTML}
-
-            ${
-                duration !== null
-                    ? `<span>·</span>
-                       <span>${duration} min</span>`
-                    : ""
-            }
-
+        <div class="journey-meta-info">
+            <span class="stations-summary">${escapeHTML(cleanName(origin.name))} till ${escapeHTML(cleanName(destination.name))}</span>
         </div>
     `;
 
-
-    card.addEventListener(
-        "click",
-        () => {
-            showDetail(
-                trip,
-                index
-            );
-        }
-    );
-
-
+    card.addEventListener("click", () => showDetail(trip));
     return card;
 }
 
-
-/* =====================================================
-   RENDER LIST
-===================================================== */
-
-
 function renderJourneys() {
-
-    const container =
-        document.getElementById(
-            "journeys"
-        );
-
-
+    const container = document.getElementById("journeys");
     container.innerHTML = "";
 
-
     if (!journeys.length) {
-
-        container.innerHTML = `
-            <div class="error">
-                Inga resor hittades.
-            </div>
-        `;
-
+        container.innerHTML = `<div class="error">Inga resor hittades för tillfället. Försök igen om en stund.</div>`;
         return;
     }
 
-
-    journeys.forEach(
-        (trip, index) => {
-
-            const card =
-                createJourneyCard(
-                    trip,
-                    index
-                );
-
-            if (card)
-                container.appendChild(
-                    card
-                );
-
-        }
-    );
-
+    journeys.forEach((trip) => {
+        const card = createJourneyCard(trip);
+        if (card) container.appendChild(card);
+    });
 }
 
+/* SHOW DETAIL VIEW */
+function showDetail(trip) {
+    const list = document.getElementById("list");
+    const detail = document.getElementById("detail");
+    const title = document.getElementById("detailTitle");
+    const subtitle = document.getElementById("detailSubtitle");
+    const content = document.getElementById("detailContent");
 
-/* =====================================================
-   DETAIL VIEW
-===================================================== */
+    const legs = trip.LegList?.Leg || [];
+    const origin = legs[0]?.Origin;
+    const destination = legs[legs.length - 1]?.Destination;
 
-
-function showDetail(
-    trip,
-    index
-) {
-
-    const list =
-        document.getElementById(
-            "list"
-        );
-
-    const detail =
-        document.getElementById(
-            "detail"
-        );
-
-
-    const title =
-        document.getElementById(
-            "detailTitle"
-        );
-
-
-    const content =
-        document.getElementById(
-            "detailContent"
-        );
-
-
-    const legs =
-        trip.LegList?.Leg || [];
-
-
-    const origin =
-        legs[0]?.Origin;
-
-
-    const destination =
-        legs[legs.length - 1]
-            ?.Destination;
-
-
-    title.textContent =
-        `${origin?.time || ""} → ${
-            destination?.time || ""
-        }`;
-
+    title.textContent = `${formatTime(origin?.time)} → ${formatTime(destination?.time)}`;
+    subtitle.textContent = `${cleanName(origin?.name)} till ${cleanName(destination?.name)}`;
 
     let html = "";
 
+    legs.forEach((leg, idx) => {
+        if (leg.type === "TRSF") {
+            return;
+        }
 
-    legs.forEach(
-        (leg, legIndex) => {
+        if (leg.type !== "JNY" && leg.type !== "WALK") return;
 
-            if (
-                leg.type === "TRSF"
-            ) {
+        const legOrigin = leg.Origin;
+        const legDestination = leg.Destination;
+        if (!legOrigin || !legDestination) return;
 
-                html += `
-                    <div
-                        class="detail-transfer"
-                    >
-                        ${escapeHTML(
-                            leg.name ||
-                            "Byte"
-                        )}
+        const depTime = formatTime(legOrigin.time);
+        const arrTime = formatTime(legDestination.time);
+        const startDt = `${legOrigin.date}T${legOrigin.time}`;
+        const endDt = `${legDestination.date}T${legDestination.time}`;
+        const durationMin = calcDurationMinutes(startDt, endDt);
+
+        if (leg.type === "WALK") {
+            html += `
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span>Promenad</span>
+                        <span class="step-time">${durationMin !== null ? durationMin + ' min' : ''}</span>
                     </div>
-                `;
-
-                return;
-            }
-
-
-            if (
-                leg.type !== "JNY" &&
-                leg.type !== "WALK"
-            )
-                return;
-
-
-            const legOrigin =
-                leg.Origin;
-
-
-            const legDestination =
-                leg.Destination;
-
-
-            if (
-                !legOrigin ||
-                !legDestination
-            )
-                return;
-
-
-            const line =
-                lineForLeg(leg);
-
-
-            let vehicle = "";
-
-
-            if (
-                leg.type === "JNY"
-            ) {
-
-                const direction =
-                    leg.direction || "";
-
-
-                vehicle =
-                    `${line ? "Linje " + escapeHTML(line) : ""}${
-                        direction
-                            ? " · mot " +
-                              escapeHTML(direction)
-                            : ""
-                    }`;
-
-            }
-            else {
-
-                vehicle =
-                    "Gång";
-
-            }
-
-
-            const green =
-                isMetro(leg);
-
+                    <div class="step-details">
+                        <div>Från ${escapeHTML(cleanName(legOrigin.name))} till ${escapeHTML(cleanName(legDestination.name))}</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            const metro = isMetro(leg);
+            const line = lineForLeg(leg);
+            const transportName = metro ? "Tunnelbana" : "Buss";
+            const direction = leg.direction ? `mot ${escapeHTML(cleanName(leg.direction))}` : "";
 
             html += `
-
-                <div
-                    class="detail-leg"
-                >
-
-                    <div
-                        class="detail-times"
-                    >
-
-                        <div>
-                            ${escapeHTML(
-                                legOrigin.time
-                            )}
-                        </div>
-
-                        <div
-                            style="
-                                margin-top:58px;
-                            "
-                        >
-                            ${escapeHTML(
-                                legDestination.time
-                            )}
-                        </div>
-
+                <div class="timeline-step">
+                    <div class="step-header">
+                        <span>${transportName} ${escapeHTML(line)}</span>
+                        <span class="step-time">${depTime} – ${arrTime} (${durationMin !== null ? durationMin + ' min' : ''})</span>
                     </div>
-
-
-                    <div
-                        class="detail-line"
-                        style="
-                            --detail-color:
-                            ${
-                                green
-                                    ? "#20a957"
-                                    : "#59616a"
-                            };
-                        "
-                    >
-
-                        <div
-                            class="detail-dot"
-                            style="
-                                border-color:
-                                ${
-                                    green
-                                        ? "#20a957"
-                                        : "white"
-                                };
-                            "
-                        ></div>
-
-
-                        <div
-                            class="detail-dot"
-                            style="
-                                border-color:
-                                ${
-                                    green
-                                        ? "#20a957"
-                                        : "white"
-                                };
-                            "
-                        ></div>
-
+                    <div class="step-details">
+                        <div><strong>Avgång:</strong> ${escapeHTML(cleanName(legOrigin.name))}</div>
+                        <div><strong>Färdväg:</strong> ${transportName} linje ${escapeHTML(line)} ${direction}</div>
+                        <div><strong>Ankomst:</strong> ${escapeHTML(cleanName(legDestination.name))}</div>
                     </div>
-
-
-                    <div
-                        class="detail-info"
-                    >
-
-                        <div
-                            class="detail-stop"
-                        >
-                            ${escapeHTML(
-                                legOrigin.name
-                            )}
-                        </div>
-
-
-                        <div
-                            class="detail-vehicle"
-                        >
-                            ${vehicle}
-                        </div>
-
-
-                        <div
-                            style="
-                                margin-top:55px;
-                            "
-                            class="detail-stop"
-                        >
-                            ${escapeHTML(
-                                legDestination.name
-                            )}
-                        </div>
-
-                    </div>
-
                 </div>
             `;
         }
-    );
 
-
-    content.innerHTML =
-        html;
-
-
-    list.classList.add(
-        "hidden"
-    );
-
-    detail.classList.add(
-        "visible"
-    );
-
-
-    window.scrollTo(
-        {
-            top: 0,
-            behavior: "smooth"
+        // Check if next leg exists and calculate transfer time
+        const nextLeg = legs[idx + 1];
+        if (nextLeg && nextLeg.type !== "TRSF") {
+            const nextOrigin = nextLeg.Origin;
+            if (nextOrigin && nextOrigin.time && legDestination.time) {
+                const transferMin = calcDurationMinutes(`${legDestination.date}T${legDestination.time}`, `${nextOrigin.date}T${nextOrigin.time}`);
+                if (transferMin !== null && transferMin > 0) {
+                    html += `
+                        <div class="transfer-info-box">
+                            Byte vid ${escapeHTML(cleanName(legDestination.name))} · ${transferMin} min väntetid
+                        </div>
+                    `;
+                }
+            }
         }
-    );
+    });
 
+    content.innerHTML = html;
+    list.classList.add("hidden");
+    detail.classList.add("visible");
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-
-/* =====================================================
-   BACK
-===================================================== */
-
-
-document
-    .getElementById("back")
-    .addEventListener(
-        "click",
-        () => {
-
-            document
-                .getElementById("detail")
-                .classList.remove(
-                    "visible"
-                );
-
-            document
-                .getElementById("list")
-                .classList.remove(
-                    "hidden"
-                );
-
-        }
-    );
-
-
-/* =====================================================
-   LOAD RESROBOT
-===================================================== */
-
+document.getElementById("back").addEventListener("click", () => {
+    document.getElementById("detail").classList.remove("visible");
+    document.getElementById("list").classList.remove("hidden");
+});
 
 async function loadJourneys() {
-
-    const container =
-        document.getElementById(
-            "journeys"
-        );
-
-
+    const container = document.getElementById("journeys");
     try {
-
-        const response =
-            await fetch(
-                WORKER +
-                "/resrobot/trips"
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        journeys =
-    data.Trip ||
-    data.TripList?.Trip ||
-    [];
-
-
-        /*
-         * If ResRobot returns only one
-         * object instead of an array.
-         */
-
-        if (
-            !Array.isArray(journeys) &&
-            journeys
-        ) {
-
-            journeys = [
-                journeys
-            ];
-
-        }
-
+        const response = await fetch(WORKER + "/resrobot/trips");
+        if (!response.ok) throw new Error(`HTTP-fel: ${response.status}`);
+        
+        const data = await response.json();
+        journeys = data.Trip || data.TripList?.Trip || [];
+        if (!Array.isArray(journeys) && journeys) journeys = [journeys];
 
         renderJourneys();
-
-
     } catch (error) {
-
-        console.error(
-            error
-        );
-
-
+        console.error(error);
         container.innerHTML = `
-
             <div class="error">
-
-                <strong>
-                    Kunde inte hämta resor
-                </strong>
-
-                <br><br>
-
-                ${escapeHTML(
-                    error.message
-                )}
-
+                <strong>Kunde inte hämta resor</strong><br><br>
+                ${escapeHTML(error.message)}
             </div>
-
         `;
-
     }
-
 }
 
-
 loadJourneys();
-
-
-/*
- * Refresh the home screen every minute.
- *
- * ResRobot's route planner is intended
- * for this type of route-planning use.
- */
-
-setInterval(
-    loadJourneys,
-    60 * 1000
-);
-
+setInterval(loadJourneys, 60 * 1000);
 </script>
 
 </body>
