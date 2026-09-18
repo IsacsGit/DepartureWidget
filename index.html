@@ -5,11 +5,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Reseplanerare</title>
-
-<!-- LEAFLET FÖR KARTAN (TILLÅTET AV CSP) -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <style>
 * {
     box-sizing: border-box;
@@ -45,15 +40,21 @@ html, body {
     padding: 18px 16px 50px 16px;
 }
 
+/* ==========================================================================
+   UPDATED STATUS TIMESTAMP
+   ========================================================================== */
 .update-status {
     text-align: center;
     font-size: 12px;
     color: var(--text-subtle);
     margin-bottom: 14px;
     font-weight: 500;
+    letter-spacing: -0.1px;
 }
 
-/* ================= LIST SCREEN ================= */
+/* ==========================================================================
+   LIST SCREEN (DEFAULT VIEW)
+   ========================================================================== */
 .list-container {
     display: flex;
     flex-direction: column;
@@ -133,22 +134,52 @@ html, body {
     color: var(--text-white);
 }
 
-.badge-item.bus-blue { background: rgba(2, 132, 199, 0.2); color: #38bdf8; }
-.badge-item.bus-red { background: rgba(211, 47, 47, 0.2); color: #ef5350; }
-.badge-item.metro { background: rgba(48, 203, 110, 0.18); color: var(--metro-green); }
-.badge-item.walk { background: #232832; color: var(--text-subtle); font-weight: 500; }
-.badge-chevron { color: var(--text-subtle); font-size: 12px; }
+.badge-item.bus-blue {
+    background: rgba(2, 132, 199, 0.2);
+    color: #38bdf8;
+}
 
-/* ================= DETAIL VIEW ================= */
-.detail-view { display: none; }
-.detail-view.visible { display: block; }
-.list-view.hidden { display: none; }
+.badge-item.bus-red {
+    background: rgba(211, 47, 47, 0.2);
+    color: #ef5350;
+}
+
+.badge-item.metro {
+    background: rgba(48, 203, 110, 0.18);
+    color: var(--metro-green);
+}
+
+.badge-item.walk {
+    background: #232832;
+    color: var(--text-subtle);
+    font-weight: 500;
+}
+
+.badge-chevron {
+    color: var(--text-subtle);
+    font-size: 12px;
+}
+
+/* ==========================================================================
+   DETAIL VIEW
+   ========================================================================== */
+.detail-view {
+    display: none;
+}
+
+.detail-view.visible {
+    display: block;
+}
+
+.list-view.hidden {
+    display: none;
+}
 
 .nav-bar {
     display: flex;
     align-items: center;
     position: relative;
-    padding: 8px 0 16px 0;
+    padding: 8px 0 24px 0;
 }
 
 .back-circle-btn {
@@ -165,7 +196,10 @@ html, body {
     z-index: 2;
 }
 
-.back-circle-btn svg { width: 20px; height: 20px; }
+.back-circle-btn svg {
+    width: 20px;
+    height: 20px;
+}
 
 .nav-center-title {
     position: absolute;
@@ -181,46 +215,13 @@ html, body {
     letter-spacing: -0.2px;
 }
 
-/* KARTA */
-.map-card-wrapper {
-    background: var(--card-bg);
-    border-radius: 28px;
-    overflow: hidden;
-    margin-bottom: 20px;
-    box-shadow: 0 6px 22px rgba(0,0,0,0.35);
+.nav-page-sub {
+    font-size: 12px;
+    color: var(--text-subtle);
+    margin-top: 1px;
 }
 
-#routeMap {
-    width: 100%;
-    height: 230px;
-    background: #0f131a;
-}
-
-.leaflet-control-attribution { display: none !important; }
-
-.map-summary-bar {
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-white);
-}
-
-.map-summary-bar .item {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-}
-
-.map-summary-bar svg {
-    width: 16px;
-    height: 16px;
-    fill: var(--text-subtle);
-}
-
-/* KORT STRUKTUR */
+/* TRANSFER ROW */
 .transfer-strip {
     display: flex;
     align-items: center;
@@ -231,16 +232,21 @@ html, body {
     font-weight: 500;
 }
 
-.transfer-strip svg { width: 13px; height: 13px; fill: currentColor; }
+.transfer-strip svg {
+    width: 13px;
+    height: 13px;
+    fill: currentColor;
+}
 
+/* TRANSIT CARD CONTAINER */
 .card-block {
     background-color: var(--card-bg);
     border-radius: 28px;
     padding: 22px 20px;
     position: relative;
-    margin-bottom: 12px;
 }
 
+/* CARD HEADER (TOP RIGHT PILL) */
 .card-corner-badge {
     position: absolute;
     top: 20px;
@@ -251,9 +257,17 @@ html, body {
     overflow: hidden;
 }
 
-.card-corner-badge.bus-blue { background: #0284c7; }
-.card-corner-badge.bus-red { background: #d32f2f; }
-.card-corner-badge.metro { background: #20a05a; }
+.card-corner-badge.bus-blue {
+    background: #0284c7;
+}
+
+.card-corner-badge.bus-red {
+    background: #d32f2f;
+}
+
+.card-corner-badge.metro {
+    background: #20a05a;
+}
 
 .corner-icon-box {
     width: 32px;
@@ -263,10 +277,23 @@ html, body {
     justify-content: center;
 }
 
-.card-corner-badge.bus-blue .corner-icon-box { background: #0369a1; }
-.card-corner-badge.bus-red .corner-icon-box { background: #b71c1c; }
-.card-corner-badge.metro .corner-icon-box { background: #187a44; }
-.corner-icon-box svg { width: 16px; height: 16px; fill: #ffffff; }
+.card-corner-badge.bus-blue .corner-icon-box {
+    background: #0369a1;
+}
+
+.card-corner-badge.bus-red .corner-icon-box {
+    background: #b71c1c;
+}
+
+.card-corner-badge.metro .corner-icon-box {
+    background: #187a44;
+}
+
+.corner-icon-box svg {
+    width: 16px;
+    height: 16px;
+    fill: #ffffff;
+}
 
 .corner-number-box {
     padding: 0 10px;
@@ -277,6 +304,7 @@ html, body {
     line-height: 28px;
 }
 
+/* THE TIMELINE THREE-COLUMN STRUCTURE */
 .timeline-row {
     display: grid;
     grid-template-columns: 52px 16px 1fr;
@@ -290,10 +318,33 @@ html, body {
     text-align: left;
 }
 
-.time-entry { display: flex; flex-direction: column; }
-.dep-time, .arr-time { font-size: 16px; font-weight: 700; color: var(--text-white); line-height: 1.1; }
-.sched-time-crossed { font-size: 13px; color: var(--text-subtle); text-decoration: line-through; margin-top: 2px; }
-.travel-duration { font-size: 13px; color: var(--text-subtle); font-weight: 500; margin: 8px 0; }
+/* TIME BLOCKS WITH DELAY STYLING */
+.time-entry {
+    display: flex;
+    flex-direction: column;
+}
+
+.dep-time, .arr-time {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-white);
+    line-height: 1.1;
+}
+
+.sched-time-crossed {
+    font-size: 13px;
+    color: var(--text-subtle);
+    text-decoration: line-through;
+    margin-top: 2px;
+    font-weight: 500;
+}
+
+.travel-duration {
+    font-size: 13px;
+    color: var(--text-subtle);
+    font-weight: 500;
+    margin: 8px 0;
+}
 
 .spine-column {
     display: flex;
@@ -319,9 +370,18 @@ html, body {
     margin: 2px 0;
 }
 
-.spine-bar.bus-blue { background-color: var(--bus-blue); }
-.spine-bar.bus-red { background-color: var(--bus-red); }
-.spine-bar.metro { background-color: var(--metro-green); }
+.spine-bar.bus-blue {
+    background-color: var(--bus-blue);
+}
+
+.spine-bar.bus-red {
+    background-color: var(--bus-red);
+}
+
+.spine-bar.metro {
+    background-color: var(--metro-green);
+}
+
 .spine-bar.dotted-walk {
     width: 4px;
     background: transparent;
@@ -329,10 +389,26 @@ html, body {
     margin: 3px 0;
 }
 
-.info-column { display: flex; flex-direction: column; padding-right: 65px; }
-.station-title { font-size: 16px; font-weight: 700; color: var(--text-white); line-height: 1.2; }
+.info-column {
+    display: flex;
+    flex-direction: column;
+    padding-right: 65px;
+}
 
-.chips-cluster { display: flex; gap: 6px; margin: 10px 0 10px 0; flex-wrap: wrap; }
+.station-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-white);
+    line-height: 1.2;
+}
+
+.chips-cluster {
+    display: flex;
+    gap: 6px;
+    margin: 10px 0 10px 0;
+    flex-wrap: wrap;
+}
+
 .chip {
     background: #11151c;
     color: var(--text-white);
@@ -344,8 +420,19 @@ html, body {
     align-items: center;
     gap: 5px;
 }
-.chip svg { width: 12px; height: 12px; fill: var(--text-subtle); }
-.route-desc-text { font-size: 13px; color: var(--text-white); margin-bottom: 12px; line-height: 1.35; }
+
+.chip svg {
+    width: 12px;
+    height: 12px;
+    fill: var(--text-subtle);
+}
+
+.route-desc-text {
+    font-size: 13px;
+    color: var(--text-white);
+    margin-bottom: 12px;
+    line-height: 1.35;
+}
 
 .stops-accordion-trigger {
     background: none;
@@ -361,12 +448,37 @@ html, body {
     margin-bottom: 14px;
 }
 
-.stops-accordion-trigger svg { width: 11px; height: 11px; fill: currentColor; transition: transform 0.2s; }
-.stops-sublist { display: none; flex-direction: column; gap: 8px; margin-bottom: 14px; padding-left: 8px; border-left: 2px solid #2b303c; }
-.stops-sublist.open { display: flex; }
-.sub-stop-entry { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-subtle); }
+.stops-accordion-trigger svg {
+    width: 11px;
+    height: 11px;
+    fill: currentColor;
+    transition: transform 0.2s;
+}
 
-.card-block.walk-card { padding: 18px 20px; }
+.stops-sublist {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding-left: 8px;
+    border-left: 2px solid #2b303c;
+}
+
+.stops-sublist.open {
+    display: flex;
+}
+
+.sub-stop-entry {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-subtle);
+}
+
+.card-block.walk-card {
+    padding: 18px 20px;
+}
+
 .walk-badge-box {
     position: absolute;
     top: 18px;
@@ -379,9 +491,19 @@ html, body {
     align-items: center;
     justify-content: center;
 }
-.walk-badge-box svg { width: 16px; height: 16px; fill: #ffffff; }
 
-.state-box { padding: 80px 20px; text-align: center; color: var(--text-subtle); }
+.walk-badge-box svg {
+    width: 16px;
+    height: 16px;
+    fill: #ffffff;
+}
+
+.state-box {
+    padding: 80px 20px;
+    text-align: center;
+    color: var(--text-subtle);
+}
+
 .loader-spinner {
     width: 28px;
     height: 28px;
@@ -391,24 +513,19 @@ html, body {
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
 
-/* FORDONSMARKÖR */
-.live-vehicle-marker {
-    background: #0284c7;
-    border-radius: 50%;
-    border: 2px solid #ffffff;
-    box-shadow: 0 0 14px rgba(0,0,0,0.85);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    transition: transform 0.3s ease;
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
-.live-vehicle-marker.bus-red { background: #d32f2f; }
-.live-vehicle-marker.metro { background: #20a05a; }
-.live-vehicle-marker svg { width: 14px; height: 14px; fill: #ffffff; }
+
+.error-msg {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #f87171;
+    padding: 16px;
+    border-radius: 16px;
+    font-size: 13px;
+}
 </style>
 </head>
 
@@ -416,9 +533,10 @@ html, body {
 
 <div class="screen-wrapper">
 
+    <!-- STATUS TEXT -->
     <div id="updateStatus" class="update-status"></div>
 
-    <!-- LIST VIEW -->
+    <!-- ================= LIST VIEW ================= -->
     <main id="listView" class="list-view">
         <div id="journeysList" class="list-container">
             <div class="state-box">
@@ -428,7 +546,7 @@ html, body {
         </div>
     </main>
 
-    <!-- DETAIL VIEW -->
+    <!-- ================= DETAIL VIEW ================= -->
     <main id="detailView" class="detail-view">
         <nav class="nav-bar">
             <button id="backButton" class="back-circle-btn" aria-label="Tillbaka">
@@ -436,22 +554,9 @@ html, body {
             </button>
             <div class="nav-center-title">
                 <div class="nav-page-title">Resedetaljer</div>
+                <div id="navOriginName" class="nav-page-sub">Västergöksvägen</div>
             </div>
         </nav>
-
-        <div class="map-card-wrapper">
-            <div id="routeMap"></div>
-            <div class="map-summary-bar">
-                <div class="item">
-                    <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                    <span id="mapDurationText">26 min</span>
-                </div>
-                <div class="item">
-                    <svg viewBox="0 0 24 24"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/></svg>
-                    <span id="mapTransfersText">1 byte</span>
-                </div>
-            </div>
-        </div>
 
         <div id="detailTimelineFlow"></div>
     </main>
@@ -462,11 +567,28 @@ html, body {
 const WORKER = "https://sl-transit-proxy.haxxerlikeshaxx.workers.dev";
 let cachedJourneys = [];
 let lastUpdatedTime = null;
-let leafletMap = null;
-let mapLayers = [];
-let liveVehicleMarkers = [];
-let vehiclePollingTimer = null;
 
+/* TIME AGO HELPER */
+function updateStatusText() {
+    const el = document.getElementById("updateStatus");
+    if (!lastUpdatedTime) {
+        el.textContent = "";
+        return;
+    }
+    const seconds = Math.floor((new Date() - lastUpdatedTime) / 1000);
+    if (seconds < 20) {
+        el.textContent = "Uppdaterades nyss";
+    } else if (seconds < 60) {
+        el.textContent = "Uppdaterades för under 1 min sedan";
+    } else {
+        const mins = Math.floor(seconds / 60);
+        el.textContent = `Uppdaterades för ${mins} min sedan`;
+    }
+}
+
+setInterval(updateStatusText, 10000);
+
+/* HELPERS */
 function cleanStationName(name) {
     if (!name) return "";
     return name.replace(/\s*\(Stockholm kn\)/gi, "").replace(/\s*\(Vinstavägen\)/gi, "").trim();
@@ -487,16 +609,23 @@ function escapeHTML(value) {
         .replaceAll("'", "&#039;");
 }
 
+/* REALTIME & DELAY LOGIC */
 function getStopTiming(stopPoint) {
     if (!stopPoint) return { displayTime: "", schedTime: "", isDelayed: false, fullDateTime: "" };
+
     const schedT = stopPoint.time || "";
     const rtT = stopPoint.rtTime || "";
     const date = stopPoint.rtDate || stopPoint.date || new Date().toISOString().split('T')[0];
+
     const schedClean = cleanTime(schedT);
     const rtClean = cleanTime(rtT);
+
+    // Om det finns en realtid och den skiljer sig från ordinarie tidtabellstid
     const isDelayed = Boolean(rtT && rtClean !== schedClean);
+    const displayTime = isDelayed ? rtClean : schedClean;
+
     return {
-        displayTime: isDelayed ? rtClean : schedClean,
+        displayTime,
         schedTime: schedClean,
         isDelayed,
         fullDateTime: `${date}T${rtT || schedT}`
@@ -509,7 +638,9 @@ function calculateDuration(startStr, endStr) {
         const end = new Date(endStr);
         const diffMinutes = Math.round((end - start) / 60000);
         return isNaN(diffMinutes) ? null : diffMinutes;
-    } catch { return null; }
+    } catch {
+        return null;
+    }
 }
 
 function getProduct(leg) {
@@ -518,7 +649,8 @@ function getProduct(leg) {
 
 function getLineNumber(leg) {
     const p = getProduct(leg);
-    return p ? (p.num || p.line || p.name || "") : "";
+    if (!p) return "";
+    return p.num || p.line || p.name || "";
 }
 
 function checkIfMetro(leg) {
@@ -532,13 +664,6 @@ function getLineColorClass(leg) {
     const line = String(getLineNumber(leg)).trim();
     if (line === "118") return "bus-red";
     return "bus-blue";
-}
-
-function getHexColor(leg) {
-    if (checkIfMetro(leg)) return "#20a05a";
-    const line = String(getLineNumber(leg)).trim();
-    if (line === "118") return "#d32f2f";
-    return "#0284c7";
 }
 
 function sanitizeLegs(legs) {
@@ -555,238 +680,99 @@ function sanitizeLegs(legs) {
 }
 
 /* ==========================================================================
-   RESROBOT GEOMETRY PARSER (INGEN EVAL / 100% CSP SÄKER)
+   RENDER LIST
    ========================================================================== */
-function parseResRobotPolyline(polyObj) {
-    if (!polyObj) return [];
-    
-    // ResRobot crd array
-    const crd = polyObj.crd;
-    if (Array.isArray(crd) && crd.length >= 2) {
-        const pts = [];
-        let curLat = 0;
-        let curLon = 0;
-        for (let i = 0; i < crd.length; i += 2) {
-            curLon += crd[i];
-            curLat += crd[i + 1];
-            pts.push([curLat / 1000000, curLon / 1000000]);
-        }
-        return pts;
+function renderList() {
+    const container = document.getElementById("journeysList");
+    container.innerHTML = "";
+
+    if (!cachedJourneys.length) {
+        container.innerHTML = `<div class="error-msg">Inga resor hittades just nu.</div>`;
+        return;
     }
 
-    // Encoded polyline fallback
-    const enc = polyObj.crdEnc;
-    if (typeof enc === "string") {
-        let index = 0, len = enc.length;
-        let lat = 0, lng = 0;
-        const array = [];
+    cachedJourneys.forEach((trip) => {
+        const legs = sanitizeLegs(trip.LegList?.Leg || []);
+        if (!legs.length) return;
 
-        while (index < len) {
-            let b, shift = 0, result = 0;
-            do {
-                b = enc.charCodeAt(index++) - 63;
-                result |= (b & 0x1f) << shift;
-                shift += 5;
-            } while (b >= 0x20);
-            let dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
-            lat += dlat;
+        const originTiming = getStopTiming(legs[0].Origin);
+        const destTiming = getStopTiming(legs[legs.length - 1].Destination);
 
-            shift = 0;
-            result = 0;
-            do {
-                b = enc.charCodeAt(index++) - 63;
-                result |= (b & 0x1f) << shift;
-                shift += 5;
-            } while (b >= 0x20);
-            let dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
-            lng += dlng;
+        const totalDuration = calculateDuration(originTiming.fullDateTime, destTiming.fullDateTime);
 
-            array.push([lat * 1e-6, lng * 1e-6]);
-        }
-        return array;
-    }
-    return [];
-}
+        let badgesHTML = "";
+        legs.forEach((leg, idx) => {
+            if (idx > 0) badgesHTML += `<span class="badge-chevron">›</span>`;
 
-function initOrClearMap() {
-    if (!leafletMap) {
-        leafletMap = L.map('routeMap', {
-            zoomControl: false,
-            attributionControl: false
-        }).setView([59.36, 17.88], 13);
-
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19
-        }).addTo(leafletMap);
-    }
-
-    mapLayers.forEach(l => leafletMap.removeLayer(l));
-    mapLayers = [];
-    liveVehicleMarkers.forEach(m => leafletMap.removeLayer(m));
-    liveVehicleMarkers = [];
-}
-
-function drawRouteOnMap(legs) {
-    initOrClearMap();
-    const latLngBounds = [];
-
-    legs.forEach((leg) => {
-        const isWalk = leg.type === "WALK";
-        const color = isWalk ? "#718096" : getHexColor(leg);
-        let points = [];
-
-        const polyObj = leg.Polyline || leg.PolylineGroup?.Polyline?.[0];
-        if (polyObj) {
-            points = parseResRobotPolyline(polyObj);
-        }
-
-        if (!points || points.length === 0) {
-            const stops = leg.Stops?.Stop || [leg.Origin, leg.Destination].filter(Boolean);
-            stops.forEach(st => {
-                if (st.lat && st.lon) points.push([st.lat, st.lon]);
-            });
-        }
-
-        points.forEach(pt => latLngBounds.push(pt));
-
-        if (points.length >= 2) {
-            const polyline = L.polyline(points, {
-                color: color,
-                weight: isWalk ? 4 : 6,
-                dashArray: isWalk ? "5, 8" : null,
-                lineCap: "round",
-                lineJoin: "round",
-                opacity: 0.95
-            }).addTo(leafletMap);
-            mapLayers.push(polyline);
-        }
-
-        if (points.length > 0) {
-            [points[0], points[points.length - 1]].forEach(pt => {
-                const marker = L.circleMarker(pt, {
-                    radius: 5,
-                    color: "#ffffff",
-                    weight: 3,
-                    fillColor: color,
-                    fillOpacity: 1
-                }).addTo(leafletMap);
-                mapLayers.push(marker);
-            });
-        }
-    });
-
-    if (latLngBounds.length > 0) {
-        leafletMap.fitBounds(latLngBounds, { padding: [35, 35] });
-        setTimeout(() => leafletMap.invalidateSize(), 150);
-    }
-}
-
-/* ==========================================================================
-   GTFS REALTIME PARSER (REN JAVASCRIPT UTAN EVAL / PROTOBUF-BIBLIOTEK)
-   ========================================================================== */
-async function fetchAndPlotLiveVehicles(legs) {
-    try {
-        const response = await fetch(WORKER + "/gtfs/realtime/vehicles");
-        if (!response.ok) return;
-
-        const buffer = await response.arrayBuffer();
-        const u8 = new Uint8Array(buffer);
-        const dataView = new DataView(buffer);
-        
-        liveVehicleMarkers.forEach(m => leafletMap.removeLayer(m));
-        liveVehicleMarkers = [];
-
-        const myActiveTransit = legs.filter(l => l.type === "JNY").map(l => ({
-            line: String(getLineNumber(l)).trim(),
-            isMetro: checkIfMetro(l),
-            colorClass: getLineColorClass(l)
-        }));
-
-        // Blixtsnabb binär scanner för GTFS-RT float-koordinater i Stockholm
-        for (let i = 0; i < u8.length - 24; i++) {
-            // Sök efter latitud runt Stockholm (59.20 till 59.55)
-            const lat = dataView.getFloat32(i, true);
-            if (lat > 59.20 && lat < 59.55) {
-                const lon1 = dataView.getFloat32(i + 4, true);
-                const lon2 = dataView.getFloat32(i - 4, true);
-                let lon = 0;
-                if (lon1 > 17.65 && lon1 < 18.25) lon = lon1;
-                else if (lon2 > 17.65 && lon2 < 18.25) lon = lon2;
-
-                if (lon !== 0) {
-                    // Leta i kontexten runt koordinaten efter linjebeteckning
-                    const contextStart = Math.max(0, i - 120);
-                    let textChunk = "";
-                    for (let c = contextStart; c < i; c++) {
-                        textChunk += String.fromCharCode(u8[c]);
-                    }
-
-                    const match = myActiveTransit.find(m => {
-                        return textChunk.includes(m.line) || (m.isMetro && (textChunk.includes("17") || textChunk.includes("19")));
-                    });
-
-                    if (match) {
-                        const iconSvg = match.isMetro ? 
-                            '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" fill="none"/><path fill="white" d="M7 8h10v2h-4v7h-2v-7H7z"/></svg>' : 
-                            '<svg viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>';
-
-                        const customIcon = L.divIcon({
-                            html: `<div class="live-vehicle-marker ${match.colorClass}">${iconSvg}</div>`,
-                            className: '',
-                            iconSize: [26, 26],
-                            iconAnchor: [13, 13]
-                        });
-
-                        const marker = L.marker([lat, lon], { icon: customIcon }).addTo(leafletMap);
-                        liveVehicleMarkers.push(marker);
-                        i += 20; // hoppa vidare
-                    }
-                }
+            if (leg.type === "WALK") {
+                const walkMin = Math.round((parseInt(leg.duration?.replace(/\D/g,'')) || 180) / 60);
+                badgesHTML += `<span class="badge-item walk">Gå ${walkMin}m</span>`;
+            } else {
+                const line = getLineNumber(leg);
+                const isT = checkIfMetro(leg);
+                const colorClass = getLineColorClass(leg);
+                badgesHTML += `
+                    <span class="badge-item ${colorClass}">
+                        ${isT ? 'T' : 'Buss'} ${escapeHTML(line)}
+                    </span>
+                `;
             }
-        }
-    } catch (e) {
-        console.warn("Fordonspositioner hoppades över:", e);
-    }
+        });
+
+        const card = document.createElement("div");
+        card.className = "journey-overview-card";
+        card.innerHTML = `
+            <div class="overview-top">
+                <div class="overview-times">
+                    ${originTiming.displayTime} <span>→</span> ${destTiming.displayTime}
+                </div>
+                <div class="overview-duration">
+                    ${totalDuration !== null ? totalDuration + ' min' : ''}
+                </div>
+            </div>
+            <div class="overview-stations">
+                <span>Från: <strong>${escapeHTML(cleanStationName(legs[0].Origin?.name))}</strong></span>
+            </div>
+            <div class="overview-badges">
+                ${badgesHTML}
+            </div>
+        `;
+
+        card.addEventListener("click", () => renderDetail(trip));
+        container.appendChild(card);
+    });
 }
 
 /* ==========================================================================
-   DETAIL VIEW
+   RENDER DETAIL
    ========================================================================== */
 function renderDetail(trip) {
     const listView = document.getElementById("listView");
     const detailView = document.getElementById("detailView");
     const timelineFlow = document.getElementById("detailTimelineFlow");
+    const navOriginName = document.getElementById("navOriginName");
 
     const rawLegs = trip.LegList?.Leg || [];
     const legs = sanitizeLegs(rawLegs);
     if (!legs.length) return;
 
-    drawRouteOnMap(legs);
-
-    if (vehiclePollingTimer) clearInterval(vehiclePollingTimer);
-    fetchAndPlotLiveVehicles(legs);
-    vehiclePollingTimer = setInterval(() => fetchAndPlotLiveVehicles(legs), 12000);
-
-    const originTiming = getStopTiming(legs[0].Origin);
-    const destTiming = getStopTiming(legs[legs.length - 1].Destination);
-    const totalDuration = calculateDuration(originTiming.fullDateTime, destTiming.fullDateTime);
-    const transfersCount = legs.filter(l => l.type === "JNY").length - 1;
-
-    document.getElementById("mapDurationText").textContent = `${totalDuration || 26} min`;
-    document.getElementById("mapTransfersText").textContent = `${Math.max(0, transfersCount)} byte${transfersCount === 1 ? '' : 'n'}`;
+    navOriginName.textContent = cleanStationName(legs[0].Origin?.name);
 
     let html = "";
 
     legs.forEach((leg, idx) => {
         const origin = leg.Origin;
         const destination = leg.Destination;
+
         const depTiming = getStopTiming(origin);
         const arrTiming = getStopTiming(destination);
+
         const legDur = calculateDuration(depTiming.fullDateTime, arrTiming.fullDateTime);
 
         if (idx > 0) {
             const prevDestTiming = getStopTiming(legs[idx - 1].Destination);
             const transferMin = calculateDuration(prevDestTiming.fullDateTime, depTiming.fullDateTime);
+
             const isNextMetro = checkIfMetro(leg);
             const targetModeText = leg.type === "WALK" ? "promenad" : (isNextMetro ? "tunnelbana" : "buss");
 
@@ -923,89 +909,22 @@ function renderDetail(trip) {
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function renderList() {
-    const container = document.getElementById("journeysList");
-    container.innerHTML = "";
-
-    if (!cachedJourneys.length) {
-        container.innerHTML = `<div class="state-box">Inga resor hittades just nu.</div>`;
-        return;
-    }
-
-    cachedJourneys.forEach((trip) => {
-        const legs = sanitizeLegs(trip.LegList?.Leg || []);
-        if (!legs.length) return;
-
-        const originTiming = getStopTiming(legs[0].Origin);
-        const destTiming = getStopTiming(legs[legs.length - 1].Destination);
-        const totalDuration = calculateDuration(originTiming.fullDateTime, destTiming.fullDateTime);
-
-        let badgesHTML = "";
-        legs.forEach((leg, idx) => {
-            if (idx > 0) badgesHTML += `<span class="badge-chevron">›</span>`;
-
-            if (leg.type === "WALK") {
-                const walkMin = Math.round((parseInt(leg.duration?.replace(/\D/g,'')) || 180) / 60);
-                badgesHTML += `<span class="badge-item walk">Gå ${walkMin}m</span>`;
-            } else {
-                const line = getLineNumber(leg);
-                const isT = checkIfMetro(leg);
-                const colorClass = getLineColorClass(leg);
-                badgesHTML += `
-                    <span class="badge-item ${colorClass}">
-                        ${isT ? 'T' : 'Buss'} ${escapeHTML(line)}
-                    </span>
-                `;
-            }
-        });
-
-        const card = document.createElement("div");
-        card.className = "journey-overview-card";
-        card.innerHTML = `
-            <div class="overview-top">
-                <div class="overview-times">
-                    ${originTiming.displayTime} <span>→</span> ${destTiming.displayTime}
-                </div>
-                <div class="overview-duration">
-                    ${totalDuration !== null ? totalDuration + ' min' : ''}
-                </div>
-            </div>
-            <div class="overview-stations">
-                <span>Från: <strong>${escapeHTML(cleanStationName(legs[0].Origin?.name))}</strong></span>
-            </div>
-            <div class="overview-badges">
-                ${badgesHTML}
-            </div>
-        `;
-
-        card.addEventListener("click", () => renderDetail(trip));
-        container.appendChild(card);
-    });
-}
-
+/* ACCORDION TOGGLE */
 window.toggleStops = function(btn) {
     const sublist = btn.nextElementSibling;
     sublist.classList.toggle("open");
     const svg = btn.querySelector("svg");
-    if (svg) svg.style.transform = sublist.classList.contains("open") ? "rotate(180deg)" : "rotate(0deg)";
+    if (svg) {
+        svg.style.transform = sublist.classList.contains("open") ? "rotate(180deg)" : "rotate(0deg)";
+    }
 };
 
 document.getElementById("backButton").addEventListener("click", () => {
-    if (vehiclePollingTimer) clearInterval(vehiclePollingTimer);
     document.getElementById("detailView").classList.remove("visible");
     document.getElementById("listView").classList.remove("hidden");
 });
 
-function updateStatusText() {
-    const el = document.getElementById("updateStatus");
-    if (!lastUpdatedTime) { el.textContent = ""; return; }
-    const seconds = Math.floor((new Date() - lastUpdatedTime) / 1000);
-    if (seconds < 20) el.textContent = "Uppdaterades nyss";
-    else if (seconds < 60) el.textContent = "Uppdaterades för under 1 min sedan";
-    else el.textContent = `Uppdaterades för ${Math.floor(seconds / 60)} min sedan`;
-}
-setInterval(updateStatusText, 10000);
-
+/* FETCH PIPELINE */
 async function fetchJourneys() {
     const container = document.getElementById("journeysList");
     try {
@@ -1022,7 +941,12 @@ async function fetchJourneys() {
         renderList();
     } catch (err) {
         console.error(err);
-        container.innerHTML = `<div class="state-box">Kunde inte hämta resor.<br>${escapeHTML(err.message)}</div>`;
+        container.innerHTML = `
+            <div class="error-msg">
+                <strong>Kunde inte ladda resor</strong><br><br>
+                ${escapeHTML(err.message)}
+            </div>
+        `;
     }
 }
 
