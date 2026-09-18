@@ -20,7 +20,8 @@
     --text-white: #f5f6f8;
     --text-subtle: #848c97;
     --metro-green: #30cb6e;
-    --bus-line: #2b303c;
+    --bus-blue: #0284c7;
+    --bus-red: #d32f2f;
     --accent-blue: #388bfd;
 }
 
@@ -37,17 +38,6 @@ html, body {
     margin: 0 auto;
     min-height: 100vh;
     padding: 18px 16px 50px 16px;
-}
-
-/* ==========================================================================
-   COMMON ICONS (PURE INLINE SVG)
-   ========================================================================== */
-.icon {
-    display: inline-block;
-    vertical-align: middle;
-    width: 14px;
-    height: 14px;
-    fill: currentColor;
 }
 
 /* ==========================================================================
@@ -129,8 +119,17 @@ html, body {
     border-radius: 8px;
     font-size: 13px;
     font-weight: 700;
-    background: #252b36;
     color: var(--text-white);
+}
+
+.badge-item.bus-blue {
+    background: rgba(2, 132, 199, 0.2);
+    color: #38bdf8;
+}
+
+.badge-item.bus-red {
+    background: rgba(211, 47, 47, 0.2);
+    color: #ef5350;
 }
 
 .badge-item.metro {
@@ -150,7 +149,7 @@ html, body {
 }
 
 /* ==========================================================================
-   DETAIL VIEW (EXACT MATCH OF SCREENSHOT)
+   DETAIL VIEW
    ========================================================================== */
 .detail-view {
     display: none;
@@ -210,7 +209,7 @@ html, body {
     margin-top: 1px;
 }
 
-/* TRANSFER DIVIDER ROW */
+/* TRANSFER ROW */
 .transfer-strip {
     display: flex;
     align-items: center;
@@ -246,8 +245,12 @@ html, body {
     overflow: hidden;
 }
 
-.card-corner-badge.bus {
-    background: #000000;
+.card-corner-badge.bus-blue {
+    background: #0284c7;
+}
+
+.card-corner-badge.bus-red {
+    background: #d32f2f;
 }
 
 .card-corner-badge.metro {
@@ -260,7 +263,14 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #257fa8;
+}
+
+.card-corner-badge.bus-blue .corner-icon-box {
+    background: #0369a1;
+}
+
+.card-corner-badge.bus-red .corner-icon-box {
+    background: #b71c1c;
 }
 
 .card-corner-badge.metro .corner-icon-box {
@@ -289,7 +299,6 @@ html, body {
     column-gap: 12px;
 }
 
-/* COL 1: TIMES & DURATION */
 .time-column {
     display: flex;
     flex-direction: column;
@@ -310,7 +319,6 @@ html, body {
     font-weight: 500;
 }
 
-/* COL 2: VERTICAL SPINE & DOTS */
 .spine-column {
     display: flex;
     flex-direction: column;
@@ -335,8 +343,12 @@ html, body {
     margin: 2px 0;
 }
 
-.spine-bar.bus {
-    background-color: var(--bus-line);
+.spine-bar.bus-blue {
+    background-color: var(--bus-blue);
+}
+
+.spine-bar.bus-red {
+    background-color: var(--bus-red);
 }
 
 .spine-bar.metro {
@@ -350,11 +362,10 @@ html, body {
     margin: 3px 0;
 }
 
-/* COL 3: STATION NAMES, CHIPS, LINE INFO, ACCORDION */
 .info-column {
     display: flex;
     flex-direction: column;
-    padding-right: 65px; /* space for badge */
+    padding-right: 65px;
 }
 
 .station-title {
@@ -364,7 +375,6 @@ html, body {
     line-height: 1.2;
 }
 
-/* CHIPS (TRACK, CROWDING) */
 .chips-cluster {
     display: flex;
     gap: 6px;
@@ -438,7 +448,6 @@ html, body {
     color: var(--text-subtle);
 }
 
-/* WALKING CARD SPECIFIC */
 .card-block.walk-card {
     padding: 18px 20px;
 }
@@ -462,7 +471,6 @@ html, body {
     fill: #ffffff;
 }
 
-/* SPINNER & ERROR */
 .state-box {
     padding: 80px 20px;
     text-align: center;
@@ -577,13 +585,20 @@ function checkIfMetro(leg) {
     return cat.includes("metro") || cat.includes("tunnel") || cat.includes("ult");
 }
 
+/* SPECIFIC LINE COLOR CLASSIFIER */
+function getLineColorClass(leg) {
+    if (checkIfMetro(leg)) return "metro";
+    const line = String(getLineNumber(leg)).trim();
+    if (line === "118") return "bus-red";
+    return "bus-blue";
+}
+
 /* FILTER BUGS: REMOVE TRIVIAL / DUPLICATE START WALKS */
 function sanitizeLegs(legs) {
     return legs.filter((leg, idx) => {
         if (leg.type === "WALK") {
             const startName = cleanStationName(leg.Origin?.name);
             const endName = cleanStationName(leg.Destination?.name);
-            // Purge the 3 min Västergöksvägen -> Västergöksvägen (Vinstavägen) bug
             if (startName === endName || (idx === 0 && legs.length > 1 && legs[1].type === "JNY")) {
                 return false;
             }
@@ -625,8 +640,9 @@ function renderList() {
             } else {
                 const line = getLineNumber(leg);
                 const isT = checkIfMetro(leg);
+                const colorClass = getLineColorClass(leg);
                 badgesHTML += `
-                    <span class="badge-item ${isT ? 'metro' : ''}">
+                    <span class="badge-item ${colorClass}">
                         ${isT ? 'T' : 'Buss'} ${escapeHTML(line)}
                     </span>
                 `;
@@ -658,7 +674,7 @@ function renderList() {
 }
 
 /* ==========================================================================
-   RENDER DETAIL (SCREENSHOT REPLICA)
+   RENDER DETAIL
    ========================================================================== */
 function renderDetail(trip) {
     const listView = document.getElementById("listView");
@@ -681,7 +697,7 @@ function renderDetail(trip) {
         const arrTime = cleanTime(destination?.time);
         const legDur = calculateDuration(`${origin.date}T${origin.time}`, `${destination.date}T${destination.time}`);
 
-        /* 1. OPTIONAL TRANSFER HEADER BEFORE CARD */
+        /* 1. TRANSFER HEADER BEFORE CARD */
         if (idx > 0) {
             const prevLeg = legs[idx - 1];
             const prevArrTime = prevLeg.Destination?.time;
@@ -700,7 +716,7 @@ function renderDetail(trip) {
             `;
         }
 
-        /* 2. RENDER WALKING LEG */
+        /* 2. WALKING LEG */
         if (leg.type === "WALK") {
             const distMeters = leg.dist || 240;
             html += `
@@ -730,10 +746,10 @@ function renderDetail(trip) {
             return;
         }
 
-        /* 3. RENDER BUS / METRO TRANSIT CARD */
+        /* 3. BUS / METRO TRANSIT CARD */
         const isMetro = checkIfMetro(leg);
         const line = getLineNumber(leg);
-        const lineType = isMetro ? "metro" : "bus";
+        const colorClass = getLineColorClass(leg);
         const direction = leg.direction ? cleanStationName(leg.direction) : "";
 
         // Intermediate stops
@@ -766,7 +782,7 @@ function renderDetail(trip) {
         html += `
             <div class="card-block">
                 <!-- Top Right Pill -->
-                <div class="card-corner-badge ${lineType}">
+                <div class="card-corner-badge ${colorClass}">
                     <div class="corner-icon-box">
                         ${isMetro ? 
                             '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" fill="none"/><path fill="white" d="M7 8h10v2h-4v7h-2v-7H7z"/></svg>' : 
@@ -786,7 +802,7 @@ function renderDetail(trip) {
 
                     <div class="spine-column">
                         <div class="spine-dot"></div>
-                        <div class="spine-bar ${lineType}"></div>
+                        <div class="spine-bar ${colorClass}"></div>
                         <div class="spine-dot"></div>
                     </div>
 
@@ -820,7 +836,7 @@ function renderDetail(trip) {
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-/* ACCORDION INTERACTION */
+/* ACCORDION TOGGLE */
 window.toggleStops = function(btn) {
     const sublist = btn.nextElementSibling;
     sublist.classList.toggle("open");
