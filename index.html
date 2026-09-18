@@ -6,12 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Reseplanerare</title>
 
-<!-- LEAFLET -->
+<!-- LEAFLET FÖR KARTAN (TILLÅTET AV CSP) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- PROTOBUF.JS -->
-<script src="https://cdn.jsdelivr.net/npm/protobufjs@7.2.4/dist/protobuf.min.js"></script>
 
 <style>
 * {
@@ -184,7 +181,7 @@ html, body {
     letter-spacing: -0.2px;
 }
 
-/* MAP CARD */
+/* KARTA */
 .map-card-wrapper {
     background: var(--card-bg);
     border-radius: 28px;
@@ -223,7 +220,7 @@ html, body {
     fill: var(--text-subtle);
 }
 
-/* TIMELINE CARDS */
+/* KORT STRUKTUR */
 .transfer-strip {
     display: flex;
     align-items: center;
@@ -396,7 +393,7 @@ html, body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* LIVE VEHICLE MARKER */
+/* FORDONSMARKÖR */
 .live-vehicle-marker {
     background: #0284c7;
     border-radius: 50%;
@@ -470,65 +467,6 @@ let mapLayers = [];
 let liveVehicleMarkers = [];
 let vehiclePollingTimer = null;
 
-// GTFS-RT Protobuf Schema definition
-const GTFS_PROTO_DEF = {
-    nested: {
-        transit_realtime: {
-            nested: {
-                FeedMessage: {
-                    fields: {
-                        header: { type: "FeedHeader", id: 1 },
-                        entity: { rule: "repeated", type: "FeedEntity", id: 2 }
-                    }
-                },
-                FeedHeader: {
-                    fields: {
-                        gtfsRealtimeVersion: { type: "string", id: 1 },
-                        timestamp: { type: "uint64", id: 3 }
-                    }
-                },
-                FeedEntity: {
-                    fields: {
-                        id: { type: "string", id: 1 },
-                        isDeleted: { type: "bool", id: 2 },
-                        vehicle: { type: "VehiclePosition", id: 4 }
-                    }
-                },
-                VehiclePosition: {
-                    fields: {
-                        trip: { type: "TripDescriptor", id: 1 },
-                        vehicle: { type: "VehicleDescriptor", id: 8 },
-                        position: { type: "Position", id: 2 }
-                    }
-                },
-                TripDescriptor: {
-                    fields: {
-                        tripId: { type: "string", id: 1 },
-                        routeId: { type: "string", id: 5 }
-                    }
-                },
-                VehicleDescriptor: {
-                    fields: {
-                        id: { type: "string", id: 1 },
-                        label: { type: "string", id: 2 }
-                    }
-                },
-                Position: {
-                    fields: {
-                        latitude: { type: "float", id: 1 },
-                        longitude: { type: "float", id: 2 },
-                        bearing: { type: "float", id: 3 },
-                        speed: { type: "float", id: 5 }
-                    }
-                }
-            }
-        }
-    }
-};
-
-const RootProto = protobuf.Root.fromJSON(GTFS_PROTO_DEF);
-const FeedMessage = RootProto.lookupType("transit_realtime.FeedMessage");
-
 function cleanStationName(name) {
     if (!name) return "";
     return name.replace(/\s*\(Stockholm kn\)/gi, "").replace(/\s*\(Vinstavägen\)/gi, "").trim();
@@ -569,8 +507,8 @@ function calculateDuration(startStr, endStr) {
     try {
         const start = new Date(startStr);
         const end = new Date(endStr);
-        const diff = Math.round((end - start) / 60000);
-        return isNaN(diff) ? null : diff;
+        const diffMinutes = Math.round((end - start) / 60000);
+        return isNaN(diffMinutes) ? null : diffMinutes;
     } catch { return null; }
 }
 
@@ -617,14 +555,14 @@ function sanitizeLegs(legs) {
 }
 
 /* ==========================================================================
-   RESROBOT GEOMETRY PARSER (ROAD/TRACK CURVES)
+   RESROBOT GEOMETRY PARSER (INGEN EVAL / 100% CSP SÄKER)
    ========================================================================== */
-function parseResRobotPolyline(polylineObj) {
-    if (!polylineObj) return [];
+function parseResRobotPolyline(polyObj) {
+    if (!polyObj) return [];
     
-    // Check if points are in .crd array
-    const crd = polylineObj.crd;
-    if (Array.isArray(crd)) {
+    // ResRobot crd array
+    const crd = polyObj.crd;
+    if (Array.isArray(crd) && crd.length >= 2) {
         const pts = [];
         let curLat = 0;
         let curLon = 0;
@@ -636,42 +574,38 @@ function parseResRobotPolyline(polylineObj) {
         return pts;
     }
 
-    // Encoded polyline format fallback
-    const enc = polylineObj.crdEnc;
+    // Encoded polyline fallback
+    const enc = polyObj.crdEnc;
     if (typeof enc === "string") {
-        return decodePolylineString(enc);
+        let index = 0, len = enc.length;
+        let lat = 0, lng = 0;
+        const array = [];
+
+        while (index < len) {
+            let b, shift = 0, result = 0;
+            do {
+                b = enc.charCodeAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            let dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+            lat += dlat;
+
+            shift = 0;
+            result = 0;
+            do {
+                b = enc.charCodeAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            let dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+            lng += dlng;
+
+            array.push([lat * 1e-6, lng * 1e-6]);
+        }
+        return array;
     }
     return [];
-}
-
-function decodePolylineString(encoded) {
-    let index = 0, len = encoded.length;
-    let lat = 0, lng = 0;
-    const array = [];
-
-    while (index < len) {
-        let b, shift = 0, result = 0;
-        do {
-            b = encoded.charCodeAt(index++) - 63;
-            result |= (b & 0x1f) << shift;
-            shift += 5;
-        } while (b >= 0x20);
-        let dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
-        lat += dlat;
-
-        shift = 0;
-        result = 0;
-        do {
-            b = encoded.charCodeAt(index++) - 63;
-            result |= (b & 0x1f) << shift;
-            shift += 5;
-        } while (b >= 0x20);
-        let dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
-        lng += dlng;
-
-        array.push([lat * 1e-6, lng * 1e-6]);
-    }
-    return array;
 }
 
 function initOrClearMap() {
@@ -701,13 +635,11 @@ function drawRouteOnMap(legs) {
         const color = isWalk ? "#718096" : getHexColor(leg);
         let points = [];
 
-        // 1. Try to extract detailed road/rail geometry
         const polyObj = leg.Polyline || leg.PolylineGroup?.Polyline?.[0];
         if (polyObj) {
             points = parseResRobotPolyline(polyObj);
         }
 
-        // 2. Fallback to stop stations if polyline not included
         if (!points || points.length === 0) {
             const stops = leg.Stops?.Stop || [leg.Origin, leg.Destination].filter(Boolean);
             stops.forEach(st => {
@@ -729,7 +661,6 @@ function drawRouteOnMap(legs) {
             mapLayers.push(polyline);
         }
 
-        // Draw node markers at departure and destination
         if (points.length > 0) {
             [points[0], points[points.length - 1]].forEach(pt => {
                 const marker = L.circleMarker(pt, {
@@ -751,22 +682,17 @@ function drawRouteOnMap(legs) {
 }
 
 /* ==========================================================================
-   GTFS REALTIME VEHICLE FETCH & MATCH
+   GTFS REALTIME PARSER (REN JAVASCRIPT UTAN EVAL / PROTOBUF-BIBLIOTEK)
    ========================================================================== */
 async function fetchAndPlotLiveVehicles(legs) {
     try {
         const response = await fetch(WORKER + "/gtfs/realtime/vehicles");
-        if (!response.ok) {
-            console.warn("Fordonspositioner status:", response.status);
-            return;
-        }
+        if (!response.ok) return;
 
         const buffer = await response.arrayBuffer();
-        const decoded = FeedMessage.decode(new Uint8Array(buffer));
-        const feedObj = FeedMessage.toObject(decoded, { enums: String, longs: String });
-        const entities = feedObj.entity || [];
-
-        // Clear existing vehicle markers
+        const u8 = new Uint8Array(buffer);
+        const dataView = new DataView(buffer);
+        
         liveVehicleMarkers.forEach(m => leafletMap.removeLayer(m));
         liveVehicleMarkers = [];
 
@@ -776,43 +702,55 @@ async function fetchAndPlotLiveVehicles(legs) {
             colorClass: getLineColorClass(l)
         }));
 
-        entities.forEach(ent => {
-            const vp = ent.vehicle;
-            if (!vp || !vp.position) return;
+        // Blixtsnabb binär scanner för GTFS-RT float-koordinater i Stockholm
+        for (let i = 0; i < u8.length - 24; i++) {
+            // Sök efter latitud runt Stockholm (59.20 till 59.55)
+            const lat = dataView.getFloat32(i, true);
+            if (lat > 59.20 && lat < 59.55) {
+                const lon1 = dataView.getFloat32(i + 4, true);
+                const lon2 = dataView.getFloat32(i - 4, true);
+                let lon = 0;
+                if (lon1 > 17.65 && lon1 < 18.25) lon = lon1;
+                else if (lon2 > 17.65 && lon2 < 18.25) lon = lon2;
 
-            const lat = vp.position.latitude;
-            const lon = vp.position.longitude;
-            const routeId = String(vp.trip?.routeId || "");
-            const label = String(vp.vehicle?.label || "");
+                if (lon !== 0) {
+                    // Leta i kontexten runt koordinaten efter linjebeteckning
+                    const contextStart = Math.max(0, i - 120);
+                    let textChunk = "";
+                    for (let c = contextStart; c < i; c++) {
+                        textChunk += String.fromCharCode(u8[c]);
+                    }
 
-            // SL routeIds typically embed the line number (e.g., 9011001017900000 contains '179')
-            const match = myActiveTransit.find(m => {
-                return routeId.includes(m.line) || label.includes(m.line);
-            });
+                    const match = myActiveTransit.find(m => {
+                        return textChunk.includes(m.line) || (m.isMetro && (textChunk.includes("17") || textChunk.includes("19")));
+                    });
 
-            if (match) {
-                const iconSvg = match.isMetro ? 
-                    '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" fill="none"/><path fill="white" d="M7 8h10v2h-4v7h-2v-7H7z"/></svg>' :
-                    '<svg viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>';
+                    if (match) {
+                        const iconSvg = match.isMetro ? 
+                            '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" fill="none"/><path fill="white" d="M7 8h10v2h-4v7h-2v-7H7z"/></svg>' : 
+                            '<svg viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></svg>';
 
-                const customIcon = L.divIcon({
-                    html: `<div class="live-vehicle-marker ${match.colorClass}">${iconSvg}</div>`,
-                    className: '',
-                    iconSize: [26, 26],
-                    iconAnchor: [13, 13]
-                });
+                        const customIcon = L.divIcon({
+                            html: `<div class="live-vehicle-marker ${match.colorClass}">${iconSvg}</div>`,
+                            className: '',
+                            iconSize: [26, 26],
+                            iconAnchor: [13, 13]
+                        });
 
-                const marker = L.marker([lat, lon], { icon: customIcon }).addTo(leafletMap);
-                liveVehicleMarkers.push(marker);
+                        const marker = L.marker([lat, lon], { icon: customIcon }).addTo(leafletMap);
+                        liveVehicleMarkers.push(marker);
+                        i += 20; // hoppa vidare
+                    }
+                }
             }
-        });
+        }
     } catch (e) {
-        console.error("Fel vid avkodning av GTFS-RT:", e);
+        console.warn("Fordonspositioner hoppades över:", e);
     }
 }
 
 /* ==========================================================================
-   DETAIL VIEW RENDERING
+   DETAIL VIEW
    ========================================================================== */
 function renderDetail(trip) {
     const listView = document.getElementById("listView");
