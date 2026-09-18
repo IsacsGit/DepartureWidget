@@ -40,21 +40,57 @@ html, body {
     padding: 18px 16px 50px 16px;
 }
 
-/* ==========================================================================
-   UPDATED STATUS TIMESTAMP
-   ========================================================================== */
+/* ================= TOPP-RAD (VÄXLARE + STATUS) ================= */
+.top-bar-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+/* LITEN DISKRET VÄXLARE */
+.route-switch-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 6px;
+    color: var(--text-subtle);
+    transition: opacity 0.15s ease;
+}
+
+.route-switch-inline:hover {
+    color: var(--text-white);
+}
+
+.route-switch-inline:active {
+    transform: scale(0.92);
+}
+
+.route-switch-inline svg {
+    width: 15px;
+    height: 15px;
+    fill: currentColor;
+}
+
+.route-switch-inline .switch-arrow {
+    font-size: 11px;
+    opacity: 0.6;
+    margin: 0 1px;
+}
+
 .update-status {
-    text-align: center;
     font-size: 12px;
     color: var(--text-subtle);
-    margin-bottom: 14px;
     font-weight: 500;
     letter-spacing: -0.1px;
 }
 
-/* ==========================================================================
-   LIST SCREEN (DEFAULT VIEW)
-   ========================================================================== */
+/* ================= LIST SCREEN ================= */
 .list-container {
     display: flex;
     flex-direction: column;
@@ -160,9 +196,7 @@ html, body {
     font-size: 12px;
 }
 
-/* ==========================================================================
-   DETAIL VIEW
-   ========================================================================== */
+/* ================= DETAIL VIEW ================= */
 .detail-view {
     display: none;
 }
@@ -221,7 +255,6 @@ html, body {
     margin-top: 1px;
 }
 
-/* TRANSFER ROW */
 .transfer-strip {
     display: flex;
     align-items: center;
@@ -238,7 +271,6 @@ html, body {
     fill: currentColor;
 }
 
-/* TRANSIT CARD CONTAINER */
 .card-block {
     background-color: var(--card-bg);
     border-radius: 28px;
@@ -246,7 +278,6 @@ html, body {
     position: relative;
 }
 
-/* CARD HEADER (TOP RIGHT PILL) */
 .card-corner-badge {
     position: absolute;
     top: 20px;
@@ -304,7 +335,6 @@ html, body {
     line-height: 28px;
 }
 
-/* THE TIMELINE THREE-COLUMN STRUCTURE */
 .timeline-row {
     display: grid;
     grid-template-columns: 52px 16px 1fr;
@@ -318,7 +348,6 @@ html, body {
     text-align: left;
 }
 
-/* TIME BLOCKS WITH DELAY STYLING */
 .time-entry {
     display: flex;
     flex-direction: column;
@@ -533,8 +562,13 @@ html, body {
 
 <div class="screen-wrapper">
 
-    <!-- STATUS TEXT -->
-    <div id="updateStatus" class="update-status"></div>
+    <!-- TOPP-RAD: LITEN DISKRET VÄXLARE TILL VÄNSTER OM STATUSEN -->
+    <div class="top-bar-row">
+        <button id="routeSwitchBtn" class="route-switch-inline" title="Klicka för att vända riktning">
+            <span id="routeIcons"></span>
+        </button>
+        <div id="updateStatus" class="update-status"></div>
+    </div>
 
     <!-- ================= LIST VIEW ================= -->
     <main id="listView" class="list-view">
@@ -567,6 +601,37 @@ html, body {
 const WORKER = "https://sl-transit-proxy.haxxerlikeshaxx.workers.dev";
 let cachedJourneys = [];
 let lastUpdatedTime = null;
+
+/* RIKTNING: true = Hem -> Skola, false = Skola -> Hem */
+let isHomeToSchool = true;
+
+const SVG_HOME = `<svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>`;
+const SVG_SCHOOL = `<svg viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>`;
+
+function updateSwitcherIcons() {
+    const el = document.getElementById("routeIcons");
+    if (isHomeToSchool) {
+        el.innerHTML = `${SVG_HOME}<span class="switch-arrow">→</span>${SVG_SCHOOL}`;
+    } else {
+        el.innerHTML = `${SVG_SCHOOL}<span class="switch-arrow">→</span>${SVG_HOME}`;
+    }
+}
+
+document.getElementById("routeSwitchBtn").addEventListener("click", () => {
+    isHomeToSchool = !isHomeToSchool;
+    updateSwitcherIcons();
+
+    const container = document.getElementById("journeysList");
+    container.innerHTML = `
+        <div class="state-box">
+            <div class="loader-spinner"></div>
+            <div>Hämtar avgångar...</div>
+        </div>
+    `;
+    fetchJourneys();
+});
+
+updateSwitcherIcons();
 
 /* TIME AGO HELPER */
 function updateStatusText() {
@@ -620,7 +685,6 @@ function getStopTiming(stopPoint) {
     const schedClean = cleanTime(schedT);
     const rtClean = cleanTime(rtT);
 
-    // Om det finns en realtid och den skiljer sig från ordinarie tidtabellstid
     const isDelayed = Boolean(rtT && rtClean !== schedClean);
     const displayTime = isDelayed ? rtClean : schedClean;
 
@@ -926,9 +990,12 @@ document.getElementById("backButton").addEventListener("click", () => {
 
 /* FETCH PIPELINE */
 async function fetchJourneys() {
-    const container = document.getElementById("journeysList");
+    const fromStop = isHomeToSchool ? "Västergöksvägen" : "Blackeberg";
+    const toStop = isHomeToSchool ? "Blackeberg" : "Västergöksvägen";
+
     try {
-        const res = await fetch(WORKER + "/resrobot/trips");
+        const url = `${WORKER}/resrobot/trips?from=${encodeURIComponent(fromStop)}&to=${encodeURIComponent(toStop)}`;
+        const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         
         const data = await res.json();
@@ -941,6 +1008,7 @@ async function fetchJourneys() {
         renderList();
     } catch (err) {
         console.error(err);
+        const container = document.getElementById("journeysList");
         container.innerHTML = `
             <div class="error-msg">
                 <strong>Kunde inte ladda resor</strong><br><br>
