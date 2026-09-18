@@ -6,6 +6,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Reseplanerare</title>
 <style>
+/* ==========================================================================
+   SL GOTHIC TYPSNITT
+   ========================================================================== */
+@font-face {
+    font-family: 'SL Gothic Text 2';
+    src: url('fonts/SLGothicText2-Medium.woff2') format('woff2'),
+         url('fonts/SLGothicText2-Medium.woff') format('woff'),
+         url('fonts/SLGothicText2-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'SL Gothic Text 2';
+    src: url('fonts/SLGothicText2-Bold.woff2') format('woff2'),
+         url('fonts/SLGothicText2-Bold.woff') format('woff'),
+         url('fonts/SLGothicText2-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -28,7 +51,8 @@
 html, body {
     background-color: var(--bg-page);
     color: var(--text-white);
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'SL Gothic Text 2', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 500; /* SL Gothic Text 2 Medium som bas */
     min-height: 100vh;
 }
 
@@ -38,59 +62,43 @@ html, body {
     margin: 0 auto;
     min-height: 100vh;
     padding: 18px 16px 50px 16px;
+    overflow-x: hidden;
 }
 
-/* ================= TOPP-RAD (VÄXLARE + STATUS) ================= */
-.top-bar-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 16px;
+/* ================= ANIMATIONER ================= */
+@keyframes slideFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-/* LITEN DISKRET VÄXLARE */
-.route-switch-inline {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 2px 4px;
-    border-radius: 6px;
-    color: var(--text-subtle);
-    transition: opacity 0.15s ease;
+@keyframes fadeInView {
+    from {
+        opacity: 0;
+        transform: scale(0.98) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
-.route-switch-inline:hover {
-    color: var(--text-white);
-}
-
-.route-switch-inline:active {
-    transform: scale(0.92);
-}
-
-.route-switch-inline svg {
-    width: 15px;
-    height: 15px;
-    fill: currentColor;
-}
-
-.route-switch-inline .switch-arrow {
-    font-size: 11px;
-    opacity: 0.6;
-    margin: 0 1px;
-}
-
+/* ================= UPDATED STATUS ================= */
 .update-status {
+    text-align: center;
     font-size: 12px;
     color: var(--text-subtle);
+    margin-bottom: 14px;
     font-weight: 500;
     letter-spacing: -0.1px;
 }
 
-/* ================= LIST SCREEN ================= */
+/* ================= LIST VIEW ================= */
 .list-container {
     display: flex;
     flex-direction: column;
@@ -102,16 +110,19 @@ html, body {
     border-radius: 24px;
     padding: 20px;
     cursor: pointer;
-    transition: background 0.15s ease, transform 0.1s ease;
     box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+    animation: slideFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    transition: background 0.2s ease, transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
 }
 
 .journey-overview-card:hover {
     background: var(--card-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 26px rgba(0,0,0,0.35);
 }
 
 .journey-overview-card:active {
-    transform: scale(0.985);
+    transform: scale(0.975);
 }
 
 .overview-top {
@@ -123,19 +134,19 @@ html, body {
 
 .overview-times {
     font-size: 26px;
-    font-weight: 750;
+    font-weight: 700; /* BOLD */
     letter-spacing: -0.6px;
 }
 
 .overview-times span {
     color: var(--text-subtle);
-    font-weight: 400;
+    font-weight: 500;
     margin: 0 4px;
 }
 
 .overview-duration {
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 700; /* BOLD */
     color: var(--text-subtle);
 }
 
@@ -146,10 +157,12 @@ html, body {
     display: flex;
     align-items: center;
     gap: 6px;
+    font-weight: 500;
 }
 
 .overview-stations strong {
     color: var(--text-white);
+    font-weight: 700; /* BOLD */
 }
 
 .overview-badges {
@@ -166,35 +179,15 @@ html, body {
     padding: 4px 10px;
     border-radius: 8px;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 700; /* BOLD */
     color: var(--text-white);
 }
 
-.badge-item.bus-blue {
-    background: rgba(2, 132, 199, 0.2);
-    color: #38bdf8;
-}
-
-.badge-item.bus-red {
-    background: rgba(211, 47, 47, 0.2);
-    color: #ef5350;
-}
-
-.badge-item.metro {
-    background: rgba(48, 203, 110, 0.18);
-    color: var(--metro-green);
-}
-
-.badge-item.walk {
-    background: #232832;
-    color: var(--text-subtle);
-    font-weight: 500;
-}
-
-.badge-chevron {
-    color: var(--text-subtle);
-    font-size: 12px;
-}
+.badge-item.bus-blue { background: rgba(2, 132, 199, 0.2); color: #38bdf8; }
+.badge-item.bus-red { background: rgba(211, 47, 47, 0.2); color: #ef5350; }
+.badge-item.metro { background: rgba(48, 203, 110, 0.18); color: var(--metro-green); }
+.badge-item.walk { background: #232832; color: var(--text-subtle); font-weight: 500; }
+.badge-chevron { color: var(--text-subtle); font-size: 12px; }
 
 /* ================= DETAIL VIEW ================= */
 .detail-view {
@@ -203,6 +196,7 @@ html, body {
 
 .detail-view.visible {
     display: block;
+    animation: fadeInView 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .list-view.hidden {
@@ -228,6 +222,15 @@ html, body {
     color: var(--text-white);
     cursor: pointer;
     z-index: 2;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.back-circle-btn:hover {
+    background: var(--card-hover);
+}
+
+.back-circle-btn:active {
+    transform: scale(0.92);
 }
 
 .back-circle-btn svg {
@@ -245,7 +248,7 @@ html, body {
 
 .nav-page-title {
     font-size: 17px;
-    font-weight: 700;
+    font-weight: 700; /* BOLD */
     letter-spacing: -0.2px;
 }
 
@@ -253,6 +256,7 @@ html, body {
     font-size: 12px;
     color: var(--text-subtle);
     margin-top: 1px;
+    font-weight: 500;
 }
 
 .transfer-strip {
@@ -263,6 +267,7 @@ html, body {
     color: var(--text-subtle);
     font-size: 13px;
     font-weight: 500;
+    animation: slideFadeUp 0.3s ease backwards;
 }
 
 .transfer-strip svg {
@@ -276,6 +281,7 @@ html, body {
     border-radius: 28px;
     padding: 22px 20px;
     position: relative;
+    animation: slideFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
 .card-corner-badge {
@@ -288,17 +294,9 @@ html, body {
     overflow: hidden;
 }
 
-.card-corner-badge.bus-blue {
-    background: #0284c7;
-}
-
-.card-corner-badge.bus-red {
-    background: #d32f2f;
-}
-
-.card-corner-badge.metro {
-    background: #20a05a;
-}
+.card-corner-badge.bus-blue { background: #0284c7; }
+.card-corner-badge.bus-red { background: #d32f2f; }
+.card-corner-badge.metro { background: #20a05a; }
 
 .corner-icon-box {
     width: 32px;
@@ -308,28 +306,15 @@ html, body {
     justify-content: center;
 }
 
-.card-corner-badge.bus-blue .corner-icon-box {
-    background: #0369a1;
-}
-
-.card-corner-badge.bus-red .corner-icon-box {
-    background: #b71c1c;
-}
-
-.card-corner-badge.metro .corner-icon-box {
-    background: #187a44;
-}
-
-.corner-icon-box svg {
-    width: 16px;
-    height: 16px;
-    fill: #ffffff;
-}
+.card-corner-badge.bus-blue .corner-icon-box { background: #0369a1; }
+.card-corner-badge.bus-red .corner-icon-box { background: #b71c1c; }
+.card-corner-badge.metro .corner-icon-box { background: #187a44; }
+.corner-icon-box svg { width: 16px; height: 16px; fill: #ffffff; }
 
 .corner-number-box {
     padding: 0 10px;
     font-size: 15px;
-    font-weight: 800;
+    font-weight: 700; /* BOLD */
     letter-spacing: -0.4px;
     color: #ffffff;
     line-height: 28px;
@@ -355,7 +340,7 @@ html, body {
 
 .dep-time, .arr-time {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 700; /* BOLD */
     color: var(--text-white);
     line-height: 1.1;
 }
@@ -399,18 +384,9 @@ html, body {
     margin: 2px 0;
 }
 
-.spine-bar.bus-blue {
-    background-color: var(--bus-blue);
-}
-
-.spine-bar.bus-red {
-    background-color: var(--bus-red);
-}
-
-.spine-bar.metro {
-    background-color: var(--metro-green);
-}
-
+.spine-bar.bus-blue { background-color: var(--bus-blue); }
+.spine-bar.bus-red { background-color: var(--bus-red); }
+.spine-bar.metro { background-color: var(--metro-green); }
 .spine-bar.dotted-walk {
     width: 4px;
     background: transparent;
@@ -426,7 +402,7 @@ html, body {
 
 .station-title {
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 700; /* BOLD */
     color: var(--text-white);
     line-height: 1.2;
 }
@@ -442,7 +418,7 @@ html, body {
     background: #11151c;
     color: var(--text-white);
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 500;
     padding: 5px 9px;
     border-radius: 7px;
     display: inline-flex;
@@ -461,40 +437,54 @@ html, body {
     color: var(--text-white);
     margin-bottom: 12px;
     line-height: 1.35;
+    font-weight: 500;
 }
 
+/* VISA X HÅLLPLATSER I MEDIUM */
 .stops-accordion-trigger {
     background: none;
     border: none;
     color: #499bed;
     font-size: 13px;
-    font-weight: 600;
+    font-family: inherit;
+    font-weight: 500; /* MEDIUM ENLIGT INSTRUKTION */
     padding: 0;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
     margin-bottom: 14px;
+    transition: opacity 0.15s ease;
+}
+
+.stops-accordion-trigger:hover {
+    opacity: 0.85;
 }
 
 .stops-accordion-trigger svg {
     width: 11px;
     height: 11px;
     fill: currentColor;
-    transition: transform 0.2s;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .stops-sublist {
-    display: none;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-bottom: 14px;
+    margin-bottom: 0;
     padding-left: 8px;
     border-left: 2px solid #2b303c;
+    transition: max-height 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease, margin-bottom 0.3s ease;
 }
 
 .stops-sublist.open {
-    display: flex;
+    max-height: 350px;
+    opacity: 1;
+    margin-bottom: 14px;
 }
 
 .sub-stop-entry {
@@ -502,6 +492,7 @@ html, body {
     justify-content: space-between;
     font-size: 12px;
     color: var(--text-subtle);
+    font-weight: 500;
 }
 
 .card-block.walk-card {
@@ -531,6 +522,7 @@ html, body {
     padding: 80px 20px;
     text-align: center;
     color: var(--text-subtle);
+    font-weight: 500;
 }
 
 .loader-spinner {
@@ -554,6 +546,7 @@ html, body {
     padding: 16px;
     border-radius: 16px;
     font-size: 13px;
+    font-weight: 500;
 }
 </style>
 </head>
@@ -562,13 +555,8 @@ html, body {
 
 <div class="screen-wrapper">
 
-    <!-- TOPP-RAD: LITEN DISKRET VÄXLARE TILL VÄNSTER OM STATUSEN -->
-    <div class="top-bar-row">
-        <button id="routeSwitchBtn" class="route-switch-inline" title="Klicka för att vända riktning">
-            <span id="routeIcons"></span>
-        </button>
-        <div id="updateStatus" class="update-status"></div>
-    </div>
+    <!-- STATUS TEXT -->
+    <div id="updateStatus" class="update-status"></div>
 
     <!-- ================= LIST VIEW ================= -->
     <main id="listView" class="list-view">
@@ -601,37 +589,6 @@ html, body {
 const WORKER = "https://sl-transit-proxy.haxxerlikeshaxx.workers.dev";
 let cachedJourneys = [];
 let lastUpdatedTime = null;
-
-/* RIKTNING: true = Hem -> Skola, false = Skola -> Hem */
-let isHomeToSchool = true;
-
-const SVG_HOME = `<svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>`;
-const SVG_SCHOOL = `<svg viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>`;
-
-function updateSwitcherIcons() {
-    const el = document.getElementById("routeIcons");
-    if (isHomeToSchool) {
-        el.innerHTML = `${SVG_HOME}<span class="switch-arrow">→</span>${SVG_SCHOOL}`;
-    } else {
-        el.innerHTML = `${SVG_SCHOOL}<span class="switch-arrow">→</span>${SVG_HOME}`;
-    }
-}
-
-document.getElementById("routeSwitchBtn").addEventListener("click", () => {
-    isHomeToSchool = !isHomeToSchool;
-    updateSwitcherIcons();
-
-    const container = document.getElementById("journeysList");
-    container.innerHTML = `
-        <div class="state-box">
-            <div class="loader-spinner"></div>
-            <div>Hämtar avgångar...</div>
-        </div>
-    `;
-    fetchJourneys();
-});
-
-updateSwitcherIcons();
 
 /* TIME AGO HELPER */
 function updateStatusText() {
@@ -744,7 +701,7 @@ function sanitizeLegs(legs) {
 }
 
 /* ==========================================================================
-   RENDER LIST
+   RENDER LIST (MED STAGGERED FADE-IN)
    ========================================================================== */
 function renderList() {
     const container = document.getElementById("journeysList");
@@ -755,7 +712,7 @@ function renderList() {
         return;
     }
 
-    cachedJourneys.forEach((trip) => {
+    cachedJourneys.forEach((trip, index) => {
         const legs = sanitizeLegs(trip.LegList?.Leg || []);
         if (!legs.length) return;
 
@@ -785,6 +742,9 @@ function renderList() {
 
         const card = document.createElement("div");
         card.className = "journey-overview-card";
+        // Förskjuten animation per kort (0.05s, 0.1s, 0.15s...)
+        card.style.animationDelay = `${index * 0.05}s`;
+
         card.innerHTML = `
             <div class="overview-top">
                 <div class="overview-times">
@@ -832,6 +792,7 @@ function renderDetail(trip) {
         const arrTiming = getStopTiming(destination);
 
         const legDur = calculateDuration(depTiming.fullDateTime, arrTiming.fullDateTime);
+        const animDelay = `${idx * 0.06}s`;
 
         if (idx > 0) {
             const prevDestTiming = getStopTiming(legs[idx - 1].Destination);
@@ -841,7 +802,7 @@ function renderDetail(trip) {
             const targetModeText = leg.type === "WALK" ? "promenad" : (isNextMetro ? "tunnelbana" : "buss");
 
             html += `
-                <div class="transfer-strip">
+                <div class="transfer-strip" style="animation-delay: ${animDelay};">
                     <span>${transferMin > 0 ? transferMin + ' min' : '< 1 min'}</span>
                     <svg viewBox="0 0 24 24"><path d="M11 4h2v12l5.5-5.5 1.42 1.42L12 19.84l-7.92-7.92L5.5 10.5 11 16V4z"/></svg>
                     <span>Byt till ${targetModeText}</span>
@@ -852,7 +813,7 @@ function renderDetail(trip) {
         if (leg.type === "WALK") {
             const distMeters = leg.dist || 240;
             html += `
-                <div class="card-block walk-card">
+                <div class="card-block walk-card" style="animation-delay: ${animDelay};">
                     <div class="walk-badge-box">
                         <svg viewBox="0 0 24 24"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7z"/></svg>
                     </div>
@@ -911,7 +872,7 @@ function renderDetail(trip) {
         }
 
         html += `
-            <div class="card-block">
+            <div class="card-block" style="animation-delay: ${animDelay};">
                 <div class="card-corner-badge ${colorClass}">
                     <div class="corner-icon-box">
                         ${isMetro ? 
@@ -973,7 +934,7 @@ function renderDetail(trip) {
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-/* ACCORDION TOGGLE */
+/* ACCORDION TOGGLE (MJUK ANIMATION) */
 window.toggleStops = function(btn) {
     const sublist = btn.nextElementSibling;
     sublist.classList.toggle("open");
@@ -990,12 +951,9 @@ document.getElementById("backButton").addEventListener("click", () => {
 
 /* FETCH PIPELINE */
 async function fetchJourneys() {
-    const fromStop = isHomeToSchool ? "Västergöksvägen" : "Blackeberg";
-    const toStop = isHomeToSchool ? "Blackeberg" : "Västergöksvägen";
-
+    const container = document.getElementById("journeysList");
     try {
-        const url = `${WORKER}/resrobot/trips?from=${encodeURIComponent(fromStop)}&to=${encodeURIComponent(toStop)}`;
-        const res = await fetch(url);
+        const res = await fetch(WORKER + "/resrobot/trips");
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         
         const data = await res.json();
@@ -1008,7 +966,6 @@ async function fetchJourneys() {
         renderList();
     } catch (err) {
         console.error(err);
-        const container = document.getElementById("journeysList");
         container.innerHTML = `
             <div class="error-msg">
                 <strong>Kunde inte ladda resor</strong><br><br>
